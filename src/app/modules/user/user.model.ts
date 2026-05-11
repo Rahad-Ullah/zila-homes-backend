@@ -3,12 +3,12 @@ import { model, Schema } from 'mongoose';
 import config from '../../../config';
 import { IUser, UserModal } from './user.interface';
 import { UserRole, UserStatus } from './user.constant';
+import { autoIncrementPlugin } from '../../../DB/autoIncrementPlugin';
 
 const userSchema = new Schema<IUser, UserModal>(
   {
     uid: {
       type: String,
-      required: true,
       unique: true,
       trim: true,
     },
@@ -149,6 +149,14 @@ userSchema.pre('save', async function (next) {
     Number(config.bcrypt_salt_rounds)
   );
   next();
+});
+
+// auto increment uid
+userSchema.plugin(autoIncrementPlugin, {
+  incField: 'uid',
+  prefix: 'USR',
+  counterId: 'user_sequence',
+  padLength: 6
 });
 
 export const User = model<IUser, UserModal>('User', userSchema);

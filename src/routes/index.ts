@@ -4,7 +4,7 @@ import { UserRoutes } from '../app/modules/user/user.route';
 import { notificationRoutes } from '../app/modules/notification/notification.route';
 const router = express.Router();
 
-const apiRoutes = [
+const apiRoutes: { path: string; route: any }[] = [
   {
     path: '/users',
     route: UserRoutes,
@@ -17,7 +17,7 @@ const apiRoutes = [
     path: '/notifications',
     route: notificationRoutes,
   },
-];
+]
 
 apiRoutes.forEach(route => router.use(route.path, route.route));
 
