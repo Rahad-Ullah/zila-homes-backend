@@ -16,7 +16,7 @@ import cryptoToken from '../../../utils/cryptoToken';
 import generateOTP from '../../../utils/generateOTP';
 import { ResetToken } from '../resetToken/resetToken.model';
 import { User } from '../user/user.model';
-import { USER_STATUS } from '../user/user.constant';
+import { UserStatus } from '../user/user.constant';
 
 //------------------ login service ------------------
 const loginUserFromDB = async (payload: ILoginData) => {
@@ -43,7 +43,7 @@ const loginUserFromDB = async (payload: ILoginData) => {
   }
 
   //check user status
-  if (isExistUser.status !== USER_STATUS.ACTIVE) {
+  if (isExistUser.status !== UserStatus.Active) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
       'It looks like your account has been suspended or deactivated.'
@@ -81,7 +81,7 @@ const forgetPasswordToDB = async (email: string) => {
   }
 
   //check user status
-  if (isExistUser.status !== USER_STATUS.ACTIVE) {
+  if (isExistUser.status !== UserStatus.Active) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
       'It looks like your account has been suspended or deactivated.'

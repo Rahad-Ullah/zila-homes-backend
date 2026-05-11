@@ -3,7 +3,6 @@ import auth from '../../middlewares/auth';
 import validateRequest from '../../middlewares/validateRequest';
 import { AuthController } from './auth.controller';
 import { AuthValidation } from './auth.validation';
-import { USER_ROLES } from '../user/user.constant';
 const router = express.Router();
 
 router.post(
@@ -32,7 +31,7 @@ router.post(
 
 router.post(
   '/change-password',
-  auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+  auth(),
   validateRequest(AuthValidation.createChangePasswordZodSchema),
   AuthController.changePassword
 );

@@ -1,20 +1,30 @@
 import bcrypt from 'bcrypt';
-import { StatusCodes } from 'http-status-codes';
 import { model, Schema } from 'mongoose';
 import config from '../../../config';
-import ApiError from '../../../errors/ApiError';
 import { IUser, UserModal } from './user.interface';
-import { USER_ROLES, USER_STATUS } from './user.constant';
+import { UserRole, UserStatus } from './user.constant';
 
 const userSchema = new Schema<IUser, UserModal>(
   {
-    name: {
+    uid: {
       type: String,
       required: true,
+      unique: true,
+      trim: true,
+    },
+    firstName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    lastName: {
+      type: String,
+      required: true,
+      trim: true,
     },
     role: {
       type: String,
-      enum: Object.values(USER_ROLES),
+      enum: Object.values(UserRole),
       required: true,
     },
     email: {
@@ -22,6 +32,7 @@ const userSchema = new Schema<IUser, UserModal>(
       required: true,
       unique: true,
       lowercase: true,
+      trim: true,
     },
     password: {
       type: String,
@@ -37,10 +48,43 @@ const userSchema = new Schema<IUser, UserModal>(
       type: String,
       default: '',
     },
+    address: {
+      street: {
+        type: String,
+        default: '',
+      },
+      city: {
+        type: String,
+        default: '',
+      },
+      state: {
+        type: String,
+        default: '',
+      },
+      postalCode: {
+        type: String,
+        default: '',
+      },
+      country: {
+        type: String,
+        default: '',
+      },
+    },
+    location: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        default: 'Point',
+      },
+      coordinates: {
+        type: [Number],
+        default: [0, 0],
+      },
+    },
     status: {
       type: String,
-      enum: Object.values(USER_STATUS),
-      default: USER_STATUS.ACTIVE,
+      enum: Object.values(UserStatus),
+      default: UserStatus.Active,
     },
     isVerified: {
       type: Boolean,

@@ -7,11 +7,11 @@ import unlinkFile from '../../../shared/unlinkFile';
 import generateOTP from '../../../utils/generateOTP';
 import { IUser } from './user.interface';
 import { User } from './user.model';
-import { USER_ROLES, USER_STATUS } from './user.constant';
+import { UserRole, UserStatus } from './user.constant';
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
   //set role
-  payload.role = USER_ROLES.USER;
+  payload.role = UserRole.Customer;
 
   const createdUser = await User.create(payload);
   if (!createdUser) {
@@ -21,7 +21,7 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
   //send email
   const otp = generateOTP(6);
   const values = {
-    name: createdUser.name,
+    name: createdUser.firstName,
     otp: otp,
     email: createdUser.email!,
   };
@@ -68,7 +68,7 @@ const getProfileFromDB = async (id: string): Promise<Partial<IUser>> => {
   }
 
   //check user status
-  if (user.status !== USER_STATUS.ACTIVE) {
+  if (user.status !== UserStatus.Active) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
       'It looks like your account has been suspended or deactivated.',

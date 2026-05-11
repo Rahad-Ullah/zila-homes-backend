@@ -1,10 +1,14 @@
-export enum USER_ROLES {
-  SUPER_ADMIN = 'Super Admin',
-  ADMIN = 'Admin',
-  USER = 'User',
+export enum UserRole {
+  Customer = 'customer',
+  Owner = 'owner',
+  Host = 'host',
+  Driver = 'driver',
+  SuperAdmin = 'super_admin',
+  Admin = 'admin',
 }
 
-export enum USER_STATUS {
-  ACTIVE = 'Active',
-  INACTIVE = 'Inactive',
+export enum UserStatus {
+  Active = 'active',
+  Inactive = 'inactive',
+  Blocked = 'blocked',
 }

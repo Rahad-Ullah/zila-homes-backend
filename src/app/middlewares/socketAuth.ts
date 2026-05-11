@@ -2,11 +2,11 @@ import jwt from 'jsonwebtoken';
 import { Socket } from 'socket.io';
 import ApiError from '../../errors/ApiError';
 import { StatusCodes } from 'http-status-codes';
-import { USER_ROLES } from '../modules/user/user.constant';
+import { UserRole } from '../modules/user/user.constant';
 
 interface JwtPayload {
   id: string;
-  role: USER_ROLES;
+  role: UserRole;
   email?: string;
   iat: number;
   exp: number;

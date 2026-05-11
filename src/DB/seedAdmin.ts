@@ -1,12 +1,13 @@
-import { USER_ROLES } from '../app/modules/user/user.constant';
+import { UserRole } from '../app/modules/user/user.constant';
 import { User } from '../app/modules/user/user.model';
 import config from '../config';
 import { logger } from '../shared/logger';
 
 const payload = {
-  name: 'Administrator',
+  firstName: 'Super',
+  lastName: 'Admin',
   email: config.super_admin.email,
-  role: USER_ROLES.SUPER_ADMIN,
+  role: UserRole.SuperAdmin,
   password: config.super_admin.password,
   isVerified: true,
 };
@@ -14,7 +15,7 @@ const payload = {
 export const seedSuperAdmin = async () => {
   const isExistSuperAdmin = await User.findOne({
     email: config.super_admin.email,
-    role: USER_ROLES.SUPER_ADMIN,
+    role: UserRole.SuperAdmin,
   });
   if (!isExistSuperAdmin) {
     await User.create(payload);

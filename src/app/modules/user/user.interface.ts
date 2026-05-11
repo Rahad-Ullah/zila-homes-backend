@@ -1,14 +1,28 @@
-import { Model } from 'mongoose';
-import { USER_ROLES, USER_STATUS } from './user.constant';
+import { Model, ObjectId } from 'mongoose';
+import { UserRole, UserStatus } from './user.constant';
 
-export type IUser = {
-  name: string;
-  role: USER_ROLES;
+export interface IUser {
+  _id: ObjectId;
+  uid: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
   email: string;
   password: string;
   phone: string;
   image?: string;
-  status: USER_STATUS;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+  }
+  location: {
+    type: string;
+    coordinates: [number, number];
+  };
+  status: UserStatus;
   isVerified: boolean;
   isOnline: boolean;
   isDeleted: boolean;
@@ -17,6 +31,8 @@ export type IUser = {
     oneTimeCode: number;
     expireAt: Date;
   };
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type UserModal = {
