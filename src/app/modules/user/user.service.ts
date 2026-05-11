@@ -7,7 +7,8 @@ import unlinkFile from '../../../shared/unlinkFile';
 import generateOTP from '../../../utils/generateOTP';
 import { IUser } from './user.interface';
 import { User } from './user.model';
-import { UserStatus } from './user.constant';
+import { UserRole, UserStatus } from './user.constant';
+import QueryBuilder from '../../builder/QueryBuilder';
 
 const createUserToDB = async (payload: Partial<IUser>) => {
   // check if user is exist
@@ -77,11 +78,11 @@ const getProfileFromDB = async (id: string): Promise<Partial<IUser>> => {
   }
 
   return user;
-};;
+};
 
 const updateProfileToDB = async (
   user: JwtPayload,
-  payload: Partial<IUser>
+  payload: Partial<IUser>,
 ): Promise<Partial<IUser | null>> => {
   const { id } = user;
   const isExistUser = await User.isExistUserById(id);
@@ -101,9 +102,48 @@ const updateProfileToDB = async (
   return updateDoc;
 };
 
+// ------------ update user status ------------
+const updateStatusToDB = async (
+  id: string,
+  payload: { status: UserStatus },
+): Promise<Partial<IUser | null>> => {
+  const isExistUser = await User.exists({ _id: id });
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  const updateDoc = await User.findOneAndUpdate({ _id: id }, payload, {
+    new: true,
+  });
+
+  return updateDoc;
+};
+
+// ------------ get all users ------------
+const getAllUsersFromDB = async (query: Record<string, unknown>) => {
+  const userQuery = new QueryBuilder(
+    User.find({ isDeleted: false, role: { $ne: UserRole.SuperAdmin } }),
+    query,
+  )
+    .search(['firstName', 'lastName', 'email'])
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const [users, pagination] = await Promise.all([
+    userQuery.modelQuery.lean(),
+    userQuery.getPaginationInfo(),
+  ]);
+
+  return { users, pagination };
+};
+
 export const UserService = {
   createUserToDB,
   getSingleUserFromDB,
   getProfileFromDB,
   updateProfileToDB,
+  updateStatusToDB,
+  getAllUsersFromDB,
 };

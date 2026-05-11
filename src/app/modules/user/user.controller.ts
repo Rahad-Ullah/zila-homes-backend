@@ -58,9 +58,36 @@ const updateProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// update user status
+const updateStatus = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserService.updateStatusToDB(req.params.id, req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'User status updated successfully',
+    data: result,
+  });
+});
+
+// get all users
+const getAllUsers = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserService.getAllUsersFromDB(req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Users data retrieved successfully',
+    data: result.users,
+    pagination: result.pagination,
+  });
+});
+
 export const UserController = {
   createUser,
   getUserProfile,
   getSingleUser,
   updateProfile,
+  updateStatus,
+  getAllUsers,
 };
