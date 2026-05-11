@@ -7,12 +7,16 @@ import unlinkFile from '../../../shared/unlinkFile';
 import generateOTP from '../../../utils/generateOTP';
 import { IUser } from './user.interface';
 import { User } from './user.model';
-import { UserRole, UserStatus } from './user.constant';
+import { UserStatus } from './user.constant';
 
-const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
-  //set role
-  payload.role = UserRole.Customer;
+const createUserToDB = async (payload: Partial<IUser>) => {
+  // check if user is exist
+  const isExistUser = await User.exists({ email: payload.email });
+  if (isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Email already exists!');
+  }
 
+  // create user
   const createdUser = await User.create(payload);
   if (!createdUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create user');
@@ -28,7 +32,7 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
   const createAccountTemplate = emailTemplate.createAccount(values);
   emailHelper.sendEmail(createAccountTemplate);
 
-  //save to DB
+  //save otp to DB
   const authentication = {
     oneTimeCode: otp,
     expireAt: new Date(Date.now() + 5 * 60 * 1000), // 5 min
@@ -38,10 +42,7 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
     { $set: { authentication } },
   );
 
-  // remove password
-  createdUser.password = '';
-
-  return createdUser;
+  return { message: 'Account created successfully. Please verify your email.' };
 };
 
 const getSingleUserFromDB = async (id: string): Promise<Partial<IUser>> => {

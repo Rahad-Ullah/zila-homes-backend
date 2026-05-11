@@ -12,7 +12,7 @@ router.post(
 );
 
 router.post(
-  '/forget-password',
+  '/generate-otp',
   validateRequest(AuthValidation.createForgetPasswordZodSchema),
   AuthController.forgetPassword
 );

@@ -1,11 +1,12 @@
 import { z } from 'zod';
-import { UserStatus } from './user.constant';
+import { UserRole, UserStatus } from './user.constant';
 import { objectId } from '../../../shared/objectIdValidator';
 
 const createUserZodSchema = z.object({
   body: z.object({
-    firstName: z.string({ required_error: 'First name is required' }),
-    lastName: z.string({ required_error: 'Last name is required' }),
+    firstName: z.string({ required_error: 'First name is required' }).nonempty('First name cannot be empty'),
+    lastName: z.string({ required_error: 'Last name is required' }).nonempty('Last name cannot be empty'),
+    role: z.enum([UserRole.Customer, UserRole.Driver, UserRole.Host], { required_error: 'Role is required' }),
     email: z.string({ required_error: 'Email is required' }).email('Invalid email address'),
     password: z.string({ required_error: 'Password is required' }).min(8, 'Password must be at least 8 characters long'),
     phone: z.string({ required_error: 'Phone is required' }).optional(),
