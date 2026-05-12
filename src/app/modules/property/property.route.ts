@@ -26,4 +26,13 @@ router.patch(
     PropertyController.updateAccommodation,
 );
 
+// create listing
+router.post(
+    '/listing/create',
+    auth(UserRole.Host),
+    fileUploadHandler(),
+    validateRequest(PropertyValidations.createListingSchema),
+    PropertyController.createListing,
+);
+
 export const PropertyRoutes = router;

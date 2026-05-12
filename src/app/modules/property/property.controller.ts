@@ -58,7 +58,38 @@ const updateAccommodation = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// create listing
+const createListing = catchAsync(async (req: Request, res: Response) => {
+  const images = getMultipleFilesPath(req, 'image');
+  const videoUrl = getSingleFilePath(req, 'media');
+  // check if images and videoUrl is empty
+  if (!Array.isArray(images) || images.length === 0) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Minimum 1 image is required');
+  }
+  if (!videoUrl) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Video is required');
+  }
+
+  const payload = {
+    provider: req.user.id,
+    category: PropertyCategory.Listing,
+    images,
+    videoUrl,
+    ...req.body,
+  };
+
+  const result = await PropertyServices.createListing(payload);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.CREATED,
+    success: true,
+    message: 'Listing created successfully',
+    data: result,
+  });
+});
+
 export const PropertyController = {
   createAccommodation,
   updateAccommodation,
+  createListing,
 };
