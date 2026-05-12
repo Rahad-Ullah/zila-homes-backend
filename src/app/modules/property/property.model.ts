@@ -37,7 +37,7 @@ const propertySchema = new Schema<IProperty, PropertyModel>(
     },
     currency: {
       type: String,
-      default: 'USD',
+      default: 'ETB',
     },
     address: {
       street: {

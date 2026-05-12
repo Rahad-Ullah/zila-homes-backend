@@ -3,6 +3,7 @@ import {
   PropertyStatus,
   PropertyStructureType,
 } from './property.constants';
+import { objectId } from '../../../shared/objectIdValidator';
 
 // create accommodation
 const createAccommodationSchema = z.object({
@@ -35,6 +36,9 @@ const createAccommodationSchema = z.object({
 
 // update property
 const updatePropertySchema = z.object({
+  params: z.object({
+    id: objectId('Property ID'),
+  }),
   body: z.object({
     structureType: z.nativeEnum(PropertyStructureType).optional(),
     title: z.string().optional(),

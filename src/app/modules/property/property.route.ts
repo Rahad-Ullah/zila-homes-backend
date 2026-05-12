@@ -10,11 +10,20 @@ const router = express.Router();
 
 // create accommodation
 router.post(
-    '/create-accommodation',
+    '/accommodation/create',
     auth(UserRole.Admin, UserRole.SuperAdmin),
     fileUploadHandler(),
     validateRequest(PropertyValidations.createAccommodationSchema),
     PropertyController.createAccommodation,
+);
+
+// update accommodation
+router.patch(
+    '/accommodation/:id',
+    auth(UserRole.Admin, UserRole.SuperAdmin),
+    fileUploadHandler(),
+    validateRequest(PropertyValidations.updatePropertySchema),
+    PropertyController.updateAccommodation,
 );
 
 export const PropertyRoutes = router;

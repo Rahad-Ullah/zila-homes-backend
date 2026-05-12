@@ -7,7 +7,7 @@ import { PropertyCategory } from './property.constants';
 import { getMultipleFilesPath, getSingleFilePath } from '../../../shared/getFilePath';
 import ApiError from '../../../errors/ApiError';
 
-// ------------- create accommodation -------------
+// create accommodation
 const createAccommodation = catchAsync(async (req: Request, res: Response) => {
   const images = getMultipleFilesPath(req, 'image');
   const videoUrl = getSingleFilePath(req, 'media');
@@ -37,6 +37,28 @@ const createAccommodation = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// update accommodation
+const updateAccommodation = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const images = getMultipleFilesPath(req, 'image');
+  const videoUrl = getSingleFilePath(req, 'media');
+  const payload = {
+    images,
+    videoUrl,
+    ...req.body,
+  };
+
+  const result = await PropertyServices.updateAccommodation(id, payload);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Accommodation updated successfully',
+    data: result,
+  });
+});
+
 export const PropertyController = {
   createAccommodation,
+  updateAccommodation,
 };
