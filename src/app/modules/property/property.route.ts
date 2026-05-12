@@ -60,4 +60,17 @@ router.delete(
     PropertyController.deleteMyProperty,
 );
 
+// get property by id
+router.get(
+    '/:id',
+    validateRequest(PropertyValidations.getPropertyByIdSchema),
+    PropertyController.getPropertyById,
+);
+
+// get all properties
+router.get(
+    '/',
+    PropertyController.getAllProperties,
+);
+
 export const PropertyRoutes = router;

@@ -207,10 +207,20 @@ const deletePropertySchema = z.object({
     .strict(),
 });
 
+// get property by id
+const getPropertyByIdSchema = z.object({
+  params: z
+    .object({
+      id: objectId('Property ID'),
+    })
+    .strict(),
+});
+
 export const PropertyValidations = {
   createAccommodationSchema,
   updateAccommodationSchema,
   createListingSchema,
   updateListingSchema,
   deletePropertySchema,
+  getPropertyByIdSchema,
 };

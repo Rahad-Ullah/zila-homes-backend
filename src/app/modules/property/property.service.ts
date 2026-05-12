@@ -6,6 +6,7 @@ import unlinkFile from '../../../shared/unlinkFile';
 import { IListing } from '../listing/listing.interface';
 import mongoose from 'mongoose';
 import { Listing } from '../listing/listing.model';
+import QueryBuilder from '../../builder/QueryBuilder';
 
 // ------------- create accommodation -------------
 const createAccommodation = async (payload: IProperty): Promise<IProperty> => {
@@ -130,6 +131,32 @@ const deleteMyProperty = async (propertyId: string, userId: string) => {
   return result;
 };
 
+// ------------- get property by id --------------
+const getPropertyById = async (propertyId: string) => {
+  const property = await Property.findById(propertyId).populate('listing');
+  if (!property) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Property not found');
+  }
+  return property;
+};
+
+// ------------- get all properties --------------
+const getAllProperties = async (query: Record<string, unknown>) => {
+  const propertyQuery = new QueryBuilder(Property.find({ isDeleted: false }).populate('listing'), query)
+    .search(['title', 'description'])
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const [data, pagination] = await Promise.all([
+    propertyQuery.modelQuery.lean(),
+    propertyQuery.getPaginationInfo(),
+  ]);
+
+  return { data, pagination };
+};
+
 
 export const PropertyServices = {
   createAccommodation,
@@ -138,4 +165,6 @@ export const PropertyServices = {
   updateListing,
   deleteProperty,
   deleteMyProperty,
+  getPropertyById,
+  getAllProperties,
 };

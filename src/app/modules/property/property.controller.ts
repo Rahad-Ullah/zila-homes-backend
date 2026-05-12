@@ -135,6 +135,32 @@ const deleteMyProperty = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get property by id
+const getPropertyById = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await PropertyServices.getPropertyById(id as string);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Property fetched successfully',
+    data: result,
+  });
+});
+
+// get all properties
+const getAllProperties = catchAsync(async (req: Request, res: Response) => {
+  const result = await PropertyServices.getAllProperties(req.query);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Properties fetched successfully',
+    data: result.data,
+    pagination: result.pagination,
+  });
+});
+
 export const PropertyController = {
   createAccommodation,
   updateAccommodation,
@@ -142,4 +168,6 @@ export const PropertyController = {
   updateListing,
   deleteProperty,
   deleteMyProperty,
+  getPropertyById,
+  getAllProperties,
 };
