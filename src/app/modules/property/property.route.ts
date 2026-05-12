@@ -35,4 +35,13 @@ router.post(
     PropertyController.createListing,
 );
 
+// update listing
+router.patch(
+    '/listing/:id',
+    auth(UserRole.Host, UserRole.Admin, UserRole.SuperAdmin),
+    fileUploadHandler(),
+    validateRequest(PropertyValidations.updateListingSchema),
+    PropertyController.updateListing,
+);
+
 export const PropertyRoutes = router;

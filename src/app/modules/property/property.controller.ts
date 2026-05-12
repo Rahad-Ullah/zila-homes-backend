@@ -48,7 +48,7 @@ const updateAccommodation = catchAsync(async (req: Request, res: Response) => {
     ...req.body,
   };
 
-  const result = await PropertyServices.updateAccommodation(id, payload);
+  const result = await PropertyServices.updateAccommodation(id as string, payload);
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
@@ -88,8 +88,30 @@ const createListing = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// update listing
+const updateListing = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const images = getMultipleFilesPath(req, 'image');
+  const videoUrl = getSingleFilePath(req, 'media');
+  const payload = {
+    images,
+    videoUrl,
+    ...req.body,
+  };
+
+  const result = await PropertyServices.updateListing(id as string, payload);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Listing updated successfully',
+    data: result,
+  });
+});
+
 export const PropertyController = {
   createAccommodation,
   updateAccommodation,
   createListing,
+  updateListing,
 };

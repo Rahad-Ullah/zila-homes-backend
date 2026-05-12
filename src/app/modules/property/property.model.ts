@@ -76,6 +76,10 @@ const propertySchema = new Schema<IProperty, PropertyModel>(
       type: [String],
       default: [],
     },
+    listing: {
+      type: Schema.Types.ObjectId,
+      ref: 'Listing',
+    },
     images: {
       type: [String],
       default: [],

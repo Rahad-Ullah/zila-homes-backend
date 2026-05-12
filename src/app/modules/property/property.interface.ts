@@ -22,6 +22,7 @@ export interface IProperty {
     coordinates: [number, number];
   }
   amenities: string[];
+  listing: ObjectId;
   images: string[];
   videoUrl: string;
   isFeatured: boolean;
