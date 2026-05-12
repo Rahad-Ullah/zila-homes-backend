@@ -39,6 +39,10 @@ const propertySchema = new Schema<IProperty, PropertyModel>(
       type: String,
       default: 'ETB',
     },
+    listing: {
+      type: Schema.Types.ObjectId,
+      ref: 'Listing',
+    },
     address: {
       street: {
         type: String,
@@ -75,10 +79,6 @@ const propertySchema = new Schema<IProperty, PropertyModel>(
     amenities: {
       type: [String],
       default: [],
-    },
-    listing: {
-      type: Schema.Types.ObjectId,
-      ref: 'Listing',
     },
     images: {
       type: [String],

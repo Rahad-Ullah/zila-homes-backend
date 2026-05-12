@@ -105,10 +105,37 @@ const updateListing = async (propertyId: string, payload: IProperty & IListing) 
   }
 };
 
+// ------------- delete property by id --------------
+const deleteProperty = async (propertyId: string) => {
+  const property = await Property.findByIdAndUpdate(propertyId, { isDeleted: true }, { new: true });
+  if (!property) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Property not found');
+  }
+  return property;
+};
+
+// ------------- delete my property by id --------------
+const deleteMyProperty = async (propertyId: string, userId: string) => {
+  const property = await Property.findById(propertyId);
+  if (!property) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Property not found');
+  }
+  if (property.provider.toString() !== userId) {
+    throw new ApiError(StatusCodes.FORBIDDEN, 'You are not authorized to delete this property');
+  }
+  const result = await Property.findByIdAndUpdate(propertyId, { isDeleted: true }, { new: true });
+  if (!result) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Property not found');
+  }
+  return result;
+};
+
 
 export const PropertyServices = {
   createAccommodation,
   updateAccommodation,
   createListing,
   updateListing,
+  deleteProperty,
+  deleteMyProperty,
 };

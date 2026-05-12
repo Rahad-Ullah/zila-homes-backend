@@ -109,9 +109,37 @@ const updateListing = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// delete property by id
+const deleteProperty = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await PropertyServices.deleteProperty(id as string);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Property deleted successfully',
+    data: result,
+  });
+});
+
+// delete my property by id
+const deleteMyProperty = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await PropertyServices.deleteMyProperty(id as string, req.user.id as string);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Property deleted successfully',
+    data: result,
+  });
+});
+
 export const PropertyController = {
   createAccommodation,
   updateAccommodation,
   createListing,
   updateListing,
+  deleteProperty,
+  deleteMyProperty,
 };

@@ -10,6 +10,7 @@ export interface IProperty {
   description: string;
   price: number;
   currency: string;
+  listing: ObjectId;
   address: {
     street: string;
     city: string;
@@ -22,7 +23,6 @@ export interface IProperty {
     coordinates: [number, number];
   }
   amenities: string[];
-  listing: ObjectId;
   images: string[];
   videoUrl: string;
   isFeatured: boolean;

@@ -30,8 +30,8 @@ const createAccommodationSchema = z.object({
     .strict(),
 });
 
-// update property
-const updatePropertySchema = z.object({
+// update accommodation
+const updateAccommodationSchema = z.object({
   params: z
     .object({
       id: objectId('Property ID'),
@@ -122,7 +122,7 @@ const createListingSchema = z.object({
 const updateListingSchema = z.object({
   params: z
     .object({
-      id: objectId('Listing ID'),
+      id: objectId('Property ID'),
     })
     .strict(),
   body: z
@@ -198,9 +198,19 @@ const updateListingSchema = z.object({
     .strict(),
 });
 
+// delete property
+const deletePropertySchema = z.object({
+  params: z
+    .object({
+      id: objectId('Property ID'),
+    })
+    .strict(),
+});
+
 export const PropertyValidations = {
   createAccommodationSchema,
-  updatePropertySchema,
+  updateAccommodationSchema,
   createListingSchema,
   updateListingSchema,
+  deletePropertySchema,
 };

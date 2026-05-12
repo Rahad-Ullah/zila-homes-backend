@@ -22,7 +22,7 @@ router.patch(
     '/accommodation/:id',
     auth(UserRole.Admin, UserRole.SuperAdmin),
     fileUploadHandler(),
-    validateRequest(PropertyValidations.updatePropertySchema),
+    validateRequest(PropertyValidations.updateAccommodationSchema),
     PropertyController.updateAccommodation,
 );
 
@@ -42,6 +42,22 @@ router.patch(
     fileUploadHandler(),
     validateRequest(PropertyValidations.updateListingSchema),
     PropertyController.updateListing,
+);
+
+// delete property
+router.delete(
+    '/:id',
+    auth(UserRole.Host, UserRole.Admin, UserRole.SuperAdmin),
+    validateRequest(PropertyValidations.deletePropertySchema),
+    PropertyController.deleteProperty,
+);
+
+// delete my property
+router.delete(
+    '/my-property/:id',
+    auth(UserRole.Host, UserRole.Admin, UserRole.SuperAdmin),
+    validateRequest(PropertyValidations.deletePropertySchema),
+    PropertyController.deleteMyProperty,
 );
 
 export const PropertyRoutes = router;
