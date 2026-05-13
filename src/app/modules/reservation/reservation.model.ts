@@ -11,7 +11,7 @@ const reservationSchema = new Schema<IReservation, ReservationModel>(
     },
     customer: {
       type: Schema.Types.ObjectId,
-      ref: 'Customer',
+      ref: 'User',
       required: true,
     },
     checkIn: {
@@ -60,7 +60,7 @@ const reservationSchema = new Schema<IReservation, ReservationModel>(
       },
       discount: {
         type: Number,
-        required: true,
+        default: 0,
       },
       total: {
         type: Number,
