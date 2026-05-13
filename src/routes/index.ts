@@ -6,6 +6,7 @@ import { PropertyRoutes } from '../app/modules/property/property.route';
 import { inquiryRoutes } from '../app/modules/inquiry/inquiry.route';
 import { reservationRoutes } from '../app/modules/reservation/reservation.route';
 import { rideRoutes } from '../app/modules/ride/ride.route';
+import { consultationRoutes } from '../app/modules/consultation/consultation.route';
 const router = express.Router();
 
 const apiRoutes: { path: string; route: any }[] = [
@@ -32,6 +33,10 @@ const apiRoutes: { path: string; route: any }[] = [
   {
     path: '/rides',
     route: rideRoutes,
+  },
+  {
+    path: '/consultations',
+    route: consultationRoutes,
   },
   {
     path: '/notifications',
