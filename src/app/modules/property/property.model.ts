@@ -113,6 +113,9 @@ const propertySchema = new Schema<IProperty, PropertyModel>(
   { timestamps: true },
 );
 
+// 2dsphere index for geospatial queries
+propertySchema.index({ location: '2dsphere' });
+
 export const Property = model<IProperty, PropertyModel>(
   'Property',
   propertySchema,

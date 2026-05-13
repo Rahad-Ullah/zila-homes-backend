@@ -48,4 +48,8 @@ const rideSchema = new Schema<IRide, RideModel>(
   { timestamps: true },
 );
 
+// 2dsphere index for geospatial queries
+rideSchema.index({ 'pickup.location': '2dsphere' });
+rideSchema.index({ 'dropoff.location': '2dsphere' });
+
 export const Ride = model<IRide, RideModel>('Ride', rideSchema);
