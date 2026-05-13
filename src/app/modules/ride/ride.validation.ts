@@ -48,15 +48,6 @@ const createRideSchema = z.object({
       .refine(date => new Date(date) > new Date(), {
         message: 'Pickup time must be in the future',
       }),
-    // Pricing
-    pricing: z.object({
-      amount: z.number().positive('Amount must be positive'),
-      currency: z
-        .string()
-        .length(3, 'Currency must be 3 characters')
-        .default('USD')
-        .optional(),
-    }),
   }),
 });
 
