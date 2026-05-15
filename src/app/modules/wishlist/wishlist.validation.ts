@@ -1,28 +1,21 @@
 import { z } from 'zod';
+import { objectId } from '../../../shared/objectIdValidator';
 
-// create wishlist validation
-const createWishlistValidation = z.object({
+// toggle wishlist validation
+const toggleWishlistValidation = z.object({
   body: z.object({
-    property: z.string().min(1, 'Property is required'),
-  }),
-});
-
-// delete wishlist validation
-const deleteWishlistValidation = z.object({
-  params: z.object({
-    id: z.string().min(1, 'Wishlist ID is required'),
+    property: objectId('property'),
   }),
 });
 
 // get wishlist by user id validation
 const getWishlistByUserIdValidation = z.object({
   params: z.object({
-    id: z.string().min(1, 'User ID is required'),
+    id: objectId('user'),
   }),
 });
 
 export const WishlistValidations = {
-  createWishlistValidation,
+  toggleWishlistValidation,
   getWishlistByUserIdValidation,
-  deleteWishlistValidation,
 };
