@@ -7,6 +7,7 @@ import { IListing } from '../listing/listing.interface';
 import mongoose from 'mongoose';
 import { Listing } from '../listing/listing.model';
 import QueryBuilder from '../../builder/QueryBuilder';
+import { Wishlist } from '../wishlist/wishlist.model';
 
 // ------------- create accommodation -------------
 const createAccommodation = async (payload: IProperty): Promise<IProperty> => {
@@ -144,7 +145,7 @@ const getPropertyById = async (propertyId: string) => {
 const getAllProperties = async (query: Record<string, unknown>) => {
   const propertyQuery = new QueryBuilder(Property.find({ isDeleted: false }).populate('listing'), query)
     .search(['title', 'description'])
-    .filter()
+    .filter(['userId'])
     .sort()
     .paginate()
     .fields();
@@ -153,6 +154,15 @@ const getAllProperties = async (query: Record<string, unknown>) => {
     propertyQuery.modelQuery.lean(),
     propertyQuery.getPaginationInfo(),
   ]);
+
+  // if query has userId then attach wishlist
+  if (query.userId) {
+    const wishlist = await Wishlist.find({ user: query.userId }).lean();
+    const wishlistMap = new Map(wishlist.map((wishlist: any) => [wishlist.property.toString(), wishlist]));
+    data.forEach((property: any) => {
+      property.wishlist = wishlistMap.has(property._id.toString());
+    });
+  }
 
   return { data, pagination };
 };
