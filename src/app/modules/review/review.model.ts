@@ -72,9 +72,11 @@ reviewSchema.post('save', function () {
 });
 
 // trigger after update queries execute
-reviewSchema.post('findOneAndUpdate', { document: true, query: false }, function () {
-  const model = this as any;
-  model.constructor.calculateAverageRating(model.property);
+reviewSchema.post('findOneAndUpdate', async function () {
+  const doc = await this.model.findOne(this.getFilter());
+  if (doc) {
+    await doc.constructor.calculateAverageRating(doc.property);
+  }
 });
 
 export const Review = model<IReview, ReviewModel>(
