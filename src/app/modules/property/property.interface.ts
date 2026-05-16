@@ -25,6 +25,8 @@ export interface IProperty {
   amenities: string[];
   images: string[];
   videoUrl: string;
+  ratingCount: number;
+  averageRating: number;
   isFeatured: boolean;
   isVerified: boolean;
   verifiedAt: Date;

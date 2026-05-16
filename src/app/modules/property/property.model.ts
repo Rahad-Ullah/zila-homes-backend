@@ -88,6 +88,14 @@ const propertySchema = new Schema<IProperty, PropertyModel>(
       type: String,
       default: '',
     },
+    ratingCount: {
+      type: Number,
+      default: 0,
+    },
+    averageRating: {
+      type: Number,
+      default: 0,
+    },
     isFeatured: {
       type: Boolean,
       default: false,
