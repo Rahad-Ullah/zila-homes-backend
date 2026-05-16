@@ -8,6 +8,7 @@ import { reservationRoutes } from '../app/modules/reservation/reservation.route'
 import { rideRoutes } from '../app/modules/ride/ride.route';
 import { consultationRoutes } from '../app/modules/consultation/consultation.route';
 import { wishlistRoutes } from '../app/modules/wishlist/wishlist.route';
+import { reviewRoutes } from '../app/modules/review/review.route';
 const router = express.Router();
 
 const apiRoutes: { path: string; route: any }[] = [
@@ -42,6 +43,10 @@ const apiRoutes: { path: string; route: any }[] = [
   {
     path: '/wishlists',
     route: wishlistRoutes,
+  },
+  {
+    path: '/reviews',
+    route: reviewRoutes,
   },
   {
     path: '/notifications',
