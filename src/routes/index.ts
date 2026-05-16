@@ -10,6 +10,7 @@ import { consultationRoutes } from '../app/modules/consultation/consultation.rou
 import { wishlistRoutes } from '../app/modules/wishlist/wishlist.route';
 import { reviewRoutes } from '../app/modules/review/review.route';
 import { blogRoutes } from '../app/modules/blog/blog.route';
+import { newsletterRoutes } from '../app/modules/newsletter/newsletter.route';
 const router = express.Router();
 
 const apiRoutes: { path: string; route: any }[] = [
@@ -52,6 +53,10 @@ const apiRoutes: { path: string; route: any }[] = [
   {
     path: '/blogs',
     route: blogRoutes,
+  },
+  {
+    path: '/newsletters',
+    route: newsletterRoutes,
   },
   {
     path: '/notifications',
