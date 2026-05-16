@@ -134,7 +134,6 @@ const getAllReviews = async (query: Record<string, unknown>) => {
   }
 
   const reviewQuery = new QueryBuilder(Review.find(filter), query)
-    .search(['comment'])
     .filter()
     .sort()
     .paginate()
