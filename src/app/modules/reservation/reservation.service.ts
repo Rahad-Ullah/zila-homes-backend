@@ -6,11 +6,13 @@ import { Reservation } from './reservation.model';
 import QueryBuilder from '../../builder/QueryBuilder';
 import { PropertyCategory } from '../property/property.constants';
 import { User } from '../user/user.model';
+import { TransactionServices } from '../transaction/transaction.service';
+import { TransactionReferenceType } from '../transaction/transaction.constants';
 
 // -------------- create reservation --------------
 const createReservation = async (
-  payload: IReservation,
-): Promise<IReservation> => {
+  payload: IReservation & { country: string },
+) => {
   // check if accommodation is available
   const property = await Property.findOne({ _id: payload.property, isDeleted: false });
   if (!property) {
@@ -18,6 +20,12 @@ const createReservation = async (
   }
   if (property.category !== PropertyCategory.Accommodation) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Property is not an accommodation');
+  }
+
+  // check if the customer is valid
+  const customer = await User.findById(payload.customer).select('email');
+  if (!customer) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Customer not found');
   }
 
   // calculate units and price from dates
@@ -31,7 +39,7 @@ const createReservation = async (
   const total = subtotal + serviceFee;
 
   // create reservation
-  const result = await Reservation.create({
+  const reservation = await Reservation.create({
     ...payload,
     pricing: {
       pricePerUnit,
@@ -41,8 +49,23 @@ const createReservation = async (
       total,
     },
   });
-  // !TODO: initiate payment here
-  return result;
+
+  // handle ethiopian payment
+  if (payload.country === 'Ethiopia') {
+    // handle ethiopian payment
+  }
+
+  // handle international payment
+  const payment = await TransactionServices.createStripeCheckoutSession(customer, {
+    amount: total,
+    currency: 'usd',
+    reference: {
+      type: TransactionReferenceType.Reservation,
+      id: reservation._id.toString(),
+    },
+  });
+
+  return payment;
 };
 
 // -------------- update reservation --------------
