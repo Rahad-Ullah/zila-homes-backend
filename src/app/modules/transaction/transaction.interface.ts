@@ -5,10 +5,11 @@ import {
   TransactionStatus,
   TransactionType,
 } from './transaction.constants';
+import { IUser } from '../user/user.interface';
 
 export interface ITransaction {
   _id: ObjectId;
-  user: ObjectId;
+  user: ObjectId | IUser;
   reference: {
     type: TransactionReferenceType;
     id: ObjectId;
