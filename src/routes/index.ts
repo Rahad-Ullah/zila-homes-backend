@@ -11,6 +11,7 @@ import { wishlistRoutes } from '../app/modules/wishlist/wishlist.route';
 import { reviewRoutes } from '../app/modules/review/review.route';
 import { blogRoutes } from '../app/modules/blog/blog.route';
 import { newsletterRoutes } from '../app/modules/newsletter/newsletter.route';
+import { disclaimerRoutes } from '../app/modules/disclaimer/disclaimer.route';
 const router = express.Router();
 
 const apiRoutes: { path: string; route: any }[] = [
@@ -61,6 +62,10 @@ const apiRoutes: { path: string; route: any }[] = [
   {
     path: '/notifications',
     route: notificationRoutes,
+  },
+  {
+    path: '/disclaimer',
+    route: disclaimerRoutes,
   },
 ]
 
