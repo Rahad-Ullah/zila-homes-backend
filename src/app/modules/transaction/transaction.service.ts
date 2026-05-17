@@ -2,9 +2,55 @@ import { Transaction } from './transaction.model';
 import { ITransaction } from './transaction.interface';
 import ApiError from '../../../errors/ApiError';
 import { StatusCodes } from 'http-status-codes';
-import { TransactionStatus } from './transaction.constants';
+import { TransactionStatus, TransactionReferenceType } from './transaction.constants';
+import config from '../../../config';
 import QueryBuilder from '../../builder/QueryBuilder';
 import { User } from '../user/user.model';
+import { stripe } from '../../../config/stripe';
+import { IUser } from '../user/user.interface';
+
+// ------------- create Stripe checkout session ----------------
+const createStripeCheckoutSession = async (
+  user: IUser,
+  payload: { amount: number; currency: string; reference: { type: TransactionReferenceType; id: string } }
+) => {
+  const { amount, currency, reference } = payload;
+
+  if (!amount || !currency || !reference) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Amount, currency, and reference are required');
+  }
+
+  const session = await stripe.checkout.sessions.create({
+    mode: 'payment',
+    payment_method_types: ['card'],
+    line_items: [
+      {
+        price_data: {
+          currency: currency.toLowerCase(),
+          product_data: {
+            name: `Payment for ${reference.type} - ${reference.id}`,
+          },
+          unit_amount: Math.round(amount * 100),  // amount is in cents
+        },
+        quantity: 1,
+      },
+    ],
+    success_url: `${config.frontend_url}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${config.frontend_url}/payment/cancel`,
+    client_reference_id: reference.id,
+    customer_email: user.email,
+    metadata: {
+      userId: user._id.toString(),
+      referenceType: reference.type,
+      referenceId: reference.id,
+    }
+  });
+
+  return {
+    checkoutUrl: session.url,
+    sessionId: session.id,
+  };
+};
 
 // ------------- update transaction status ----------------
 const updateTransactionStatus = async (
@@ -89,6 +135,7 @@ const getAllTransactions = async (query: Record<string, unknown>) => {
 };
 
 export const TransactionServices = {
+  createStripeCheckoutSession,
   updateTransactionStatus,
   getSingleTransaction,
   getTransactionsByUserId,
