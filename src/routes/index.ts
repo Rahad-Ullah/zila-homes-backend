@@ -12,6 +12,7 @@ import { reviewRoutes } from '../app/modules/review/review.route';
 import { blogRoutes } from '../app/modules/blog/blog.route';
 import { newsletterRoutes } from '../app/modules/newsletter/newsletter.route';
 import { disclaimerRoutes } from '../app/modules/disclaimer/disclaimer.route';
+import { settingRoutes } from '../app/modules/setting/setting.route';
 const router = express.Router();
 
 const apiRoutes: { path: string; route: any }[] = [
@@ -64,8 +65,12 @@ const apiRoutes: { path: string; route: any }[] = [
     route: notificationRoutes,
   },
   {
-    path: '/disclaimer',
+    path: '/disclaimers',
     route: disclaimerRoutes,
+  },
+  {
+    path: '/settings',
+    route: settingRoutes,
   },
 ]
 
