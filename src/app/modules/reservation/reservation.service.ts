@@ -109,7 +109,7 @@ const getAllReservations = async (query: Record<string, unknown>) => {
     .fields();
 
   const [data, pagination] = await Promise.all([
-    reservationQuery.modelQuery.populate('property').populate('customer'),
+    reservationQuery.modelQuery.populate('property').populate('customer').populate('transaction'),
     reservationQuery.getPaginationInfo(),
   ]);
 

@@ -70,10 +70,10 @@ const reservationSchema = new Schema<IReservation, ReservationModel>(
         type: String,
         default: 'ETB',
       },
-      isPaid: {
-        type: Boolean,
-        default: false,
-      },
+    },
+    transaction: {
+      type: Schema.Types.ObjectId,
+      ref: 'Transaction',
     },
     status: {
       type: String,

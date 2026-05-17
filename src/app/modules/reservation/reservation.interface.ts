@@ -21,8 +21,8 @@ export interface IReservation {
     discount: number;
     total: number;
     currency: string;
-    isPaid: boolean;
-  }
+  },
+  transaction: ObjectId;
   status: ReservationStatus;
   isDeleted: boolean;
   createdAt: Date;
