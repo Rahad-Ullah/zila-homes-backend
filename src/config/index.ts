@@ -28,6 +28,7 @@ export default {
     password: process.env.SUPER_ADMIN_PASSWORD,
   },
   stripe: {
+    api_version: process.env.STRIPE_API_VERSION,
     public_key: process.env.STRIPE_PUBLIC_KEY,
     secret_key: process.env.STRIPE_SECRET_KEY,
     webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
