@@ -58,7 +58,7 @@ const createReservation = async (
   // handle international payment
   const payment = await TransactionServices.createStripeCheckoutSession(customer, {
     amount: total,
-    currency: 'usd',
+    currency: 'USD',
     reference: {
       type: TransactionReferenceType.Reservation,
       id: reservation._id.toString(),

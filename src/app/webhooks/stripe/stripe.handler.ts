@@ -1,8 +1,8 @@
 import { StripeWebhookServices } from './stripe.service';
 import { StripeEvent as StripeEventModel } from '../../modules/stripeEvent/stripeEvent.model';
-import { Event } from 'stripe/cjs/resources/Events';
+import { Stripe } from 'stripe/cjs/stripe.core';
 
-export async function stripeEventHandler(event: Event) {
+export async function stripeEventHandler(event: Stripe.Event) {
   // Idempotency guard
   const alreadyProcessed = await StripeEventModel.exists({ id: event.id });
   if (alreadyProcessed) {

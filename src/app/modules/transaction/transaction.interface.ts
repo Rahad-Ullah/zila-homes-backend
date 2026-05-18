@@ -16,6 +16,7 @@ export interface ITransaction {
   };
   type: TransactionType;
   provider: TransactionProvider;
+  providerPaymentIntentId: string;
   paymentMethod: string;
   amount: number;
   currency: string;
