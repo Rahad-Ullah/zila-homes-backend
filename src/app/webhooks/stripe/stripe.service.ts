@@ -4,7 +4,7 @@ import { TransactionProvider, TransactionReferenceType, TransactionStatus, Trans
 import { Reservation } from '../../modules/reservation/reservation.model';
 
 
-// on checkout session completed
+// ----------------- on checkout session completed -----------------
 export const onCheckoutSessionCompleted = async (event: Stripe.Event) => {
   const session = event.data.object as Stripe.Checkout.Session
 

@@ -68,7 +68,7 @@ const reservationSchema = new Schema<IReservation, ReservationModel>(
       },
       currency: {
         type: String,
-        default: 'ETB',
+        default: 'USD',
       },
     },
     transaction: {

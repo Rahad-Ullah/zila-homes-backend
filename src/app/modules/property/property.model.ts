@@ -37,7 +37,7 @@ const propertySchema = new Schema<IProperty, PropertyModel>(
     },
     currency: {
       type: String,
-      default: 'ETB',
+      default: 'USD',
     },
     listing: {
       type: Schema.Types.ObjectId,

@@ -36,7 +36,7 @@ const rideSchema = new Schema<IRide, RideModel>(
     pickupAt: { type: Date, required: true },
     pricing: {
       amount: { type: Number, default: 0 },
-      currency: { type: String, default: 'ETB' },
+      currency: { type: String, default: 'USD' },
     },
     status: {
       type: String,
