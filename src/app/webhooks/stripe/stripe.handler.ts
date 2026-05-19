@@ -20,7 +20,7 @@ export async function stripeEventHandler(event: Stripe.Event) {
       break;
 
     case 'checkout.session.async_payment_failed':
-      // await StripeWebhookServices.onCheckoutSessionAsyncPaymentFailed(event);
+      await StripeWebhookServices.onAsyncPaymentFailed(event);
       break;
 
     default:
