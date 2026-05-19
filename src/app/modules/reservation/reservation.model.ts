@@ -70,6 +70,10 @@ const reservationSchema = new Schema<IReservation, ReservationModel>(
         type: String,
         default: 'USD',
       },
+      isPaid: {
+        type: Boolean,
+        default: false,
+      },
     },
     transaction: {
       type: Schema.Types.ObjectId,

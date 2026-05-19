@@ -12,7 +12,7 @@ export async function stripeEventHandler(event: Stripe.Event) {
   // event routing
   switch (event.type) {
     case 'checkout.session.completed':
-      // await StripeWebhookServices.onCheckoutSessionCompleted(event);
+      await StripeWebhookServices.onCheckoutSessionCompleted(event);
       break;
 
     case 'checkout.session.async_payment_succeeded':

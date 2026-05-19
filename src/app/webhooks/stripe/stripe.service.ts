@@ -46,7 +46,12 @@ export const onCheckoutSessionCompleted = async (event: Stripe.Event) => {
     // 5. Trigger Fulfiment Logic Below
     switch (referenceType) {
       case TransactionReferenceType.Reservation:
-        await Reservation.findByIdAndUpdate(referenceId, { transaction: newTransaction._id });
+        await Reservation.findByIdAndUpdate(referenceId, {
+          $set: {
+            transaction: newTransaction._id,
+            'pricing.isPaid': true,
+          }
+        });
         break;
       // add other reference types here..
       default:

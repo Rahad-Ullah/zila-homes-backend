@@ -28,7 +28,7 @@ const createStripeCheckoutSession = async (
         price_data: {
           currency: currency.toLowerCase(),
           product_data: {
-            name: `Payment for ${reference.type} - ${reference.id}`,
+            name: `Payment for ${reference.type}`,
           },
           unit_amount: Math.round(amount * 100),  // amount is in cents
         },
