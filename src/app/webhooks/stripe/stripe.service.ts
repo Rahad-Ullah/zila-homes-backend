@@ -72,6 +72,7 @@ export const onCheckoutSessionCompleted = async (event: Stripe.Event) => {
   }
 };
 
+// ----------------- on async payment failed -----------------
 export const onAsyncPaymentFailed = async (event: Stripe.Event) => {
   const session = event.data.object as Stripe.Checkout.Session;
   const paymentIntentId = session.payment_intent as string;
@@ -131,7 +132,68 @@ export const onAsyncPaymentFailed = async (event: Stripe.Event) => {
   }
 };
 
+// ----------------- on checkout session expired -----------------
+export const onCheckoutSessionExpired = async (event: Stripe.Event) => {
+  const session = event.data.object as Stripe.Checkout.Session;
+  const paymentIntentId = session.payment_intent as string;
+
+  // 1. Extract custom metadata
+  const { userId, referenceType, referenceId } = session.metadata || {};
+  if (!userId || !referenceType || !referenceId) {
+    console.error(`[Stripe Webhook Error] Missing crucial metadata for session: ${session.id}`);
+    return;
+  }
+
+  try {
+    // 2. Update or create the transaction document to mark it as Failed
+    const transaction = await Transaction.findOneAndUpdate(
+      {
+        provider: TransactionProvider.Stripe,
+        providerPaymentIntentId: paymentIntentId
+      },
+      {
+        $set: {
+          user: userId,
+          reference: {
+            type: referenceType as TransactionReferenceType,
+            id: referenceId,
+          },
+          type: TransactionType.Payment,
+          provider: TransactionProvider.Stripe,
+          providerPaymentIntentId: paymentIntentId,
+          paymentMethod: session.payment_method_types?.[0] || 'card',
+          amount: (session.amount_total || 0) / 100,
+          currency: session.currency?.toUpperCase() || 'USD',
+          status: TransactionStatus.Cancelled,
+          isPaid: false,
+        }
+      },
+      { upsert: true, new: true }
+    );
+
+    console.log(`[Stripe Webhook Failure][${event.type}] Transaction ${transaction._id} marked as FAILED.`);
+
+    // 3. Reverse Fulfillment Logic (Release the held resource)
+    switch (referenceType) {
+      case TransactionReferenceType.Reservation:
+        await Reservation.findByIdAndUpdate(referenceId, {
+          $set: {
+            transaction: transaction._id,
+            'pricing.isPaid': false,
+          }
+        });
+        break;
+      default:
+        break;
+    }
+  } catch (error: any) {
+    console.error(`[Database Error] Failed to process payment failure for intent ${paymentIntentId}:`, error.message);
+    throw error;
+  }
+};
+
 export const StripeWebhookServices = {
   onCheckoutSessionCompleted,
-  onAsyncPaymentFailed
+  onAsyncPaymentFailed,
+  onCheckoutSessionExpired
 };

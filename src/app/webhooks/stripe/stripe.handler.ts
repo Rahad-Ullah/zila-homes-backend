@@ -23,6 +23,10 @@ export async function stripeEventHandler(event: Stripe.Event) {
       await StripeWebhookServices.onAsyncPaymentFailed(event);
       break;
 
+    case 'checkout.session.expired':
+      await StripeWebhookServices.onCheckoutSessionExpired(event);
+      break;
+
     default:
   }
 
