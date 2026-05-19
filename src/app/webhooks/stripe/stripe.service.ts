@@ -24,22 +24,29 @@ export const onCheckoutSessionCompleted = async (event: Stripe.Event) => {
 
   try {
     // 4. Create the formal Transaction document inside your MongoDB ledger
-    const newTransaction = await Transaction.create({
-      user: userId,
-      reference: {
-        type: referenceType as TransactionReferenceType,
-        id: referenceId,
+    const newTransaction = await Transaction.findOneAndUpdate(
+      {
+        provider: TransactionProvider.Stripe,
+        providerPaymentIntentId: paymentIntentId,
       },
-      type: TransactionType.Payment,
-      provider: TransactionProvider.Stripe,
-      providerPaymentIntentId: paymentIntentId,
-      paymentMethod: session.payment_method_types?.[0] || 'card',
-      amount: totalAmount,
-      currency: session.currency?.toUpperCase() || 'USD',
-      status: TransactionStatus.Completed,
-      isPaid: true,
-      paidAt: new Date(),
-    });
+      {
+        user: userId,
+        reference: {
+          type: referenceType as TransactionReferenceType,
+          id: referenceId,
+        },
+        type: TransactionType.Payment,
+        provider: TransactionProvider.Stripe,
+        providerPaymentIntentId: paymentIntentId,
+        paymentMethod: session.payment_method_types?.[0] || 'card',
+        amount: totalAmount,
+        currency: session.currency?.toUpperCase() || 'USD',
+        status: TransactionStatus.Completed,
+        isPaid: true,
+        paidAt: new Date(),
+      },
+      { upsert: true, new: true }
+    );
 
     console.log(`[Stripe Webhook Success] Transaction logged successfully: ${newTransaction._id}`);
 
