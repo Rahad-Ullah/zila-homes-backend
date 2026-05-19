@@ -35,6 +35,12 @@ const transactionSchema = new Schema<ITransaction, TransactionModel>({
     type: String,
     enum: TransactionProvider,
     required: true,
+    index: true,
+  },
+  providerPaymentIntentId: {
+    type: String,
+    required: true,
+    index: true,
   },
   type: {
     type: String,
