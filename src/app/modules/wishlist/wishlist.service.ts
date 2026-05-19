@@ -11,11 +11,17 @@ const toggleWishlist = async (payload: IWishlist) => {
   if (existingWishlist) {
     // If wishlist exists, remove it (toggle off)
     const result = await Wishlist.findByIdAndDelete(existingWishlist._id);
-    return { data: result, message: 'Wishlist removed successfully' };
+    return {
+      data: { ...result?.toObject(), isWishlisted: false },
+      message: 'Wishlist removed successfully',
+    };
   } else {
     // If wishlist doesn't exist, create it (toggle on)
     const result = await Wishlist.create(payload);
-    return { data: result, message: 'Wishlist added successfully' };
+    return {
+      data: { ...result?.toObject(), isWishlisted: true },
+      message: 'Wishlist added successfully',
+    };
   }
 };
 
