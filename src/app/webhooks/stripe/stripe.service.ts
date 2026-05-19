@@ -22,6 +22,8 @@ export const onCheckoutSessionCompleted = async (event: Stripe.Event) => {
   // 3. Capture the Stripe Payment Intent ID (Crucial for processing future refunds)
   const paymentIntentId = session.payment_intent as string;
 
+  const isPaid = session.payment_status === 'paid';
+
   try {
     // 4. Create the formal Transaction document inside your MongoDB ledger
     const newTransaction = await Transaction.findOneAndUpdate(
@@ -41,9 +43,9 @@ export const onCheckoutSessionCompleted = async (event: Stripe.Event) => {
         paymentMethod: session.payment_method_types?.[0] || 'card',
         amount: totalAmount,
         currency: session.currency?.toUpperCase() || 'USD',
-        status: TransactionStatus.Completed,
-        isPaid: true,
-        paidAt: new Date(),
+        status: isPaid ? TransactionStatus.Completed : TransactionStatus.Failed,
+        isPaid: isPaid,
+        paidAt: isPaid ? new Date() : undefined,
       },
       { upsert: true, new: true }
     );
@@ -56,7 +58,7 @@ export const onCheckoutSessionCompleted = async (event: Stripe.Event) => {
         await Reservation.findByIdAndUpdate(referenceId, {
           $set: {
             transaction: newTransaction._id,
-            'pricing.isPaid': true,
+            'pricing.isPaid': isPaid,
           }
         });
         break;
