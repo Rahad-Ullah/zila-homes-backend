@@ -143,9 +143,32 @@ const getPropertyById = async (propertyId: string) => {
 
 // ------------- get all properties --------------
 const getAllProperties = async (query: Record<string, unknown>) => {
-  const propertyQuery = new QueryBuilder(Property.find({ isDeleted: false }).populate('listing'), query)
+  const filter = { isDeleted: false } as any;
+
+  // filter price range
+  const minPrice = Number(query.minPrice);
+  const maxPrice = Number(query.maxPrice);
+  if (!isNaN(minPrice) && !isNaN(maxPrice)) {
+    filter.price = { $gte: minPrice, $lte: maxPrice };
+  }
+
+  // filter by location
+  const latitude = Number(query.latitude);
+  const longitude = Number(query.longitude);
+  if (!isNaN(latitude) && !isNaN(longitude)) {
+    filter.location = {
+      $geoWithin: {
+        $centerSphere: [
+          [longitude, latitude],
+          25 / 6378.1 // 25 km converted to radians (Radius / Earth's radius in km)
+        ]
+      }
+    };
+  }
+
+  const propertyQuery = new QueryBuilder(Property.find(filter).populate('listing'), query)
     .search(['title', 'description'])
-    .filter(['userId'])
+    .filter(['userId', 'minPrice', 'maxPrice', 'latitude', 'longitude'])
     .sort()
     .paginate()
     .fields();
