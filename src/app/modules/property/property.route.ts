@@ -60,6 +60,12 @@ router.delete(
     PropertyController.deleteMyProperty,
 );
 
+// get top cities
+router.get(
+    '/top-cities',
+    PropertyController.getTopCities,
+);
+
 // get property by id
 router.get(
     '/:id',

@@ -161,6 +161,18 @@ const getAllProperties = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get top cities
+const getTopCities = catchAsync(async (req: Request, res: Response) => {
+  const result = await PropertyServices.getTopCities();
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Top cities fetched successfully',
+    data: result,
+  });
+});
+
 export const PropertyController = {
   createAccommodation,
   updateAccommodation,
@@ -170,4 +182,5 @@ export const PropertyController = {
   deleteMyProperty,
   getPropertyById,
   getAllProperties,
+  getTopCities,
 };

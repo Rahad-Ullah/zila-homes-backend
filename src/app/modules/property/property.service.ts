@@ -167,6 +167,35 @@ const getAllProperties = async (query: Record<string, unknown>) => {
   return { data, pagination };
 };
 
+// ------------- get top cities with property count --------------
+const getTopCities = async () => {
+  const result = await Property.aggregate([
+    {
+      $match: {
+        isDeleted: false,
+      },
+    },
+    {
+      $group: {
+        _id: '$address.city',
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $sort: {
+        count: -1,
+      },
+    },
+    {
+      $limit: 50,
+    },
+  ]);
+  return result.map((item: any) => ({
+    city: item._id,
+    count: item.count,
+  }));
+};
+
 
 export const PropertyServices = {
   createAccommodation,
@@ -177,4 +206,5 @@ export const PropertyServices = {
   deleteMyProperty,
   getPropertyById,
   getAllProperties,
+  getTopCities,
 };
