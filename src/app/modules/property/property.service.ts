@@ -166,9 +166,41 @@ const getAllProperties = async (query: Record<string, unknown>) => {
     };
   }
 
+  // filter by bedrooms
+  const bedrooms = Number(query.bedrooms);
+  if (!isNaN(bedrooms)) {
+    const listings = await Listing.find({ bedrooms: { $eq: bedrooms } }).select('_id').lean();
+    filter.listing = { $in: listings.map((listing: any) => listing._id) };
+  }
+
+  // filter by bathrooms
+  const bathrooms = Number(query.bathrooms);
+  if (!isNaN(bathrooms)) {
+    const listings = await Listing.find({ bathrooms: { $eq: bathrooms } }).select('_id').lean();
+    filter.listing = { $in: listings.map((listing: any) => listing._id) };
+  }
+
+  // filter by totalArea
+  const minArea = Number(query.minArea);
+  const maxArea = Number(query.maxArea);
+  if (!isNaN(minArea) && !isNaN(maxArea)) {
+    const listings = await Listing.find({ totalArea: { $gte: minArea, $lte: maxArea } }).select('_id').lean();
+    filter.listing = { $in: listings.map((listing: any) => listing._id) };
+  }
+
   const propertyQuery = new QueryBuilder(Property.find(filter).populate('listing'), query)
     .search(['title', 'description'])
-    .filter(['userId', 'minPrice', 'maxPrice', 'latitude', 'longitude'])
+    .filter([
+      'userId',
+      'minPrice',
+      'maxPrice',
+      'latitude',
+      'longitude',
+      'bedrooms',
+      'bathrooms',
+      'minArea',
+      'maxArea',
+    ])
     .sort()
     .paginate()
     .fields();
