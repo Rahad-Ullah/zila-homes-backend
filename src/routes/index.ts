@@ -14,6 +14,7 @@ import { newsletterRoutes } from '../app/modules/newsletter/newsletter.route';
 import { disclaimerRoutes } from '../app/modules/disclaimer/disclaimer.route';
 import { settingRoutes } from '../app/modules/setting/setting.route';
 import { transactionRoutes } from '../app/modules/transaction/transaction.route';
+import { advertisementRoutes } from '../app/modules/advertisement/advertisement.route';
 const router = express.Router();
 
 const apiRoutes: { path: string; route: any }[] = [
@@ -64,6 +65,10 @@ const apiRoutes: { path: string; route: any }[] = [
   {
     path: '/newsletters',
     route: newsletterRoutes,
+  },
+  {
+    path: '/advertisements',
+    route: advertisementRoutes,
   },
   {
     path: '/notifications',
