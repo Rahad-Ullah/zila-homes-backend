@@ -133,11 +133,18 @@ const deleteMyProperty = async (propertyId: string, userId: string) => {
 };
 
 // ------------- get property by id --------------
-const getPropertyById = async (propertyId: string) => {
-  const property = await Property.findById(propertyId).populate('listing');
+const getPropertyById = async (propertyId: string, query: Record<string, unknown>) => {
+  const property = await Property.findById(propertyId).populate('listing').lean();
   if (!property) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Property not found');
   }
+
+  // attach wishlist status
+  if (query.userId) {
+    const wishlist = await Wishlist.findOne({ property: propertyId, user: query.userId });
+    (property as any).isWishlisted = !!wishlist;
+  }
+
   return property;
 };
 
@@ -222,7 +229,7 @@ const getAllProperties = async (query: Record<string, unknown>) => {
     const wishlistMap = new Map(wishlist.map((item: any) => [item.property.toString(), item]));
 
     data.forEach((property: any) => {
-      property.wishlist = wishlistMap.has(property._id.toString());
+      property.isWishlisted = wishlistMap.has(property._id.toString());
     });
   }
 

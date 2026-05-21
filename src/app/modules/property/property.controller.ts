@@ -138,7 +138,7 @@ const deleteMyProperty = catchAsync(async (req: Request, res: Response) => {
 // get property by id
 const getPropertyById = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const result = await PropertyServices.getPropertyById(id as string);
+  const result = await PropertyServices.getPropertyById(id as string, req.query);
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
