@@ -3,6 +3,7 @@ import { PropertyCategory, PropertyStatus, PropertyStructureType } from './prope
 
 export interface IProperty {
   _id: ObjectId;
+  uid: string;
   provider: ObjectId;
   category: PropertyCategory;
   structureType: PropertyStructureType;

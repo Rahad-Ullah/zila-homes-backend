@@ -1,8 +1,14 @@
 import { Schema, model } from 'mongoose';
 import { IInquiry, InquiryModel } from './inquiry.interface';
 import { InquiryStatus } from './inquiry.constants';
+import { autoIncrementPlugin } from '../../../DB/autoIncrementPlugin';
 
 const inquirySchema = new Schema<IInquiry, InquiryModel>({
+  uid: {
+    type: String,
+    unique: true,
+    index: true,
+  },
   property: {
     type: Schema.Types.ObjectId,
     ref: 'Property',
@@ -36,6 +42,14 @@ const inquirySchema = new Schema<IInquiry, InquiryModel>({
     default: false,
   },
 }, { timestamps: true });
+
+// auto increment uid
+inquirySchema.plugin(autoIncrementPlugin, {
+  incField: 'uid',
+  prefix: 'INQ',
+  counterId: 'inquiry_sequence',
+  padLength: 6
+});
 
 export const Inquiry = model<IInquiry, InquiryModel>(
   'Inquiry',

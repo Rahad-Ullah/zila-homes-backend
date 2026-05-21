@@ -3,6 +3,7 @@ import { InquiryStatus } from './inquiry.constants';
 
 export type IInquiry = {
   _id: ObjectId;
+  uid: string;
   property: ObjectId;
   customer: {
     name: string;

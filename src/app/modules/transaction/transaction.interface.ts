@@ -9,6 +9,7 @@ import { IUser } from '../user/user.interface';
 
 export interface ITransaction {
   _id: ObjectId;
+  uid: string;
   user: ObjectId | IUser;
   reference: {
     type: TransactionReferenceType;

@@ -9,6 +9,7 @@ export interface IGeoLocation {
 
 export interface IRide {
   _id: ObjectId;
+  uid: string;
   // Passenger Details
   customer: {
     name: string;

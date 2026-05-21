@@ -1,8 +1,14 @@
 import { Schema, model } from 'mongoose';
 import { IConsultation, ConsultationModel } from './consultation.interface';
 import { ConsultationStatus, ConsultationType } from './consultation.constants';
+import { autoIncrementPlugin } from '../../../DB/autoIncrementPlugin';
 
 const consultationSchema = new Schema<IConsultation, ConsultationModel>({
+  uid: {
+    type: String,
+    unique: true,
+    index: true,
+  },
   type: {
     type: String,
     enum: ConsultationType,
@@ -45,6 +51,14 @@ const consultationSchema = new Schema<IConsultation, ConsultationModel>({
   },
 }, {
   timestamps: true,
+});
+
+// Apply auto-increment plugin
+consultationSchema.plugin(autoIncrementPlugin, {
+  incField: 'uid',
+  prefix: 'CNS',
+  counterId: 'consultation_sequence',
+  padLength: 6
 });
 
 export const Consultation = model<IConsultation, ConsultationModel>(

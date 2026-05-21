@@ -1,9 +1,15 @@
 import { Schema, model } from 'mongoose';
 import { IReservation, ReservationModel } from './reservation.interface';
 import { ReservationStatus, RoomClass } from './reservation.constants';
+import { autoIncrementPlugin } from '../../../DB/autoIncrementPlugin';
 
 const reservationSchema = new Schema<IReservation, ReservationModel>(
   {
+    uid: {
+      type: String,
+      unique: true,
+      index: true,
+    },
     property: {
       type: Schema.Types.ObjectId,
       ref: 'Property',
@@ -91,6 +97,14 @@ const reservationSchema = new Schema<IReservation, ReservationModel>(
   },
   { timestamps: true },
 );
+
+// auto increment uid
+reservationSchema.plugin(autoIncrementPlugin, {
+  incField: 'uid',
+  prefix: 'RES',
+  counterId: 'reservation_sequence',
+  padLength: 6
+});
 
 export const Reservation = model<IReservation, ReservationModel>(
   'Reservation',

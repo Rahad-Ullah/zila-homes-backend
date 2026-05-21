@@ -1,9 +1,15 @@
 import { Schema, model } from 'mongoose';
 import { IRide, RideModel } from './ride.interface';
 import { RideServiceType, RideStatus } from './ride.constants';
+import { autoIncrementPlugin } from '../../../DB/autoIncrementPlugin';
 
 const rideSchema = new Schema<IRide, RideModel>(
   {
+    uid: {
+      type: String,
+      unique: true,
+      index: true,
+    },
     customer: {
       name: { type: String, required: true },
       email: { type: String, required: true },
@@ -51,5 +57,13 @@ const rideSchema = new Schema<IRide, RideModel>(
 // 2dsphere index for geospatial queries
 rideSchema.index({ 'pickup.location': '2dsphere' });
 rideSchema.index({ 'dropoff.location': '2dsphere' });
+
+// auto increment uid
+rideSchema.plugin(autoIncrementPlugin, {
+  incField: 'uid',
+  prefix: 'RDE',
+  counterId: 'ride_sequence',
+  padLength: 6
+});
 
 export const Ride = model<IRide, RideModel>('Ride', rideSchema);

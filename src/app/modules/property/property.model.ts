@@ -5,9 +5,15 @@ import {
   PropertyStatus,
   PropertyStructureType,
 } from './property.constants';
+import { autoIncrementPlugin } from '../../../DB/autoIncrementPlugin';
 
 const propertySchema = new Schema<IProperty, PropertyModel>(
   {
+    uid: {
+      type: String,
+      unique: true,
+      index: true,
+    },
     provider: {
       type: Schema.Types.ObjectId,
       ref: 'User',
@@ -123,6 +129,14 @@ const propertySchema = new Schema<IProperty, PropertyModel>(
 
 // 2dsphere index for geospatial queries
 propertySchema.index({ location: '2dsphere' });
+
+// auto increment uid
+propertySchema.plugin(autoIncrementPlugin, {
+  incField: 'uid',
+  prefix: 'PRP',
+  counterId: 'property_sequence',
+  padLength: 6
+});
 
 export const Property = model<IProperty, PropertyModel>(
   'Property',

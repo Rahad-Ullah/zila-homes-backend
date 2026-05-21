@@ -3,6 +3,7 @@ import { ConsultationStatus, ConsultationType } from './consultation.constants';
 
 export interface IConsultation {
   _id: ObjectId;
+  uid: string;
   type: ConsultationType;
   customer: {
     name: string;

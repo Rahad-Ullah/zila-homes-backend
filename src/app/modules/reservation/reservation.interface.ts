@@ -3,6 +3,7 @@ import { ReservationStatus, RoomClass } from './reservation.constants';
 
 export interface IReservation {
   _id: ObjectId;
+  uid: string;
   property: ObjectId;
   customer: ObjectId;
   checkIn: Date;
