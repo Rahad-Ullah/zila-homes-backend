@@ -143,52 +143,58 @@ const getPropertyById = async (propertyId: string) => {
 
 // ------------- get all properties --------------
 const getAllProperties = async (query: Record<string, unknown>) => {
-  const filter = { isDeleted: false } as any;
+  const propertyFilter: Record<string, unknown> = { isDeleted: false };
 
-  // filter price range
+  // 1. Filter price range
   const minPrice = Number(query.minPrice);
   const maxPrice = Number(query.maxPrice);
   if (!isNaN(minPrice) && !isNaN(maxPrice)) {
-    filter.price = { $gte: minPrice, $lte: maxPrice };
+    propertyFilter.price = { $gte: minPrice, $lte: maxPrice };
   }
 
-  // filter by location
+  // 2. Filter by location
   const latitude = Number(query.latitude);
   const longitude = Number(query.longitude);
   if (!isNaN(latitude) && !isNaN(longitude)) {
-    filter.location = {
+    propertyFilter.location = {
       $geoWithin: {
         $centerSphere: [
           [longitude, latitude],
-          25 / 6378.1 // 25 km converted to radians (Radius / Earth's radius in km)
+          25 / 6378.1 // 25 km converted to radians
         ]
       }
     };
   }
 
-  // filter by bedrooms
+  // 3. Build Sub-Query Filter for Listings (FIXES THE OVERWRITE BUG)
+  const listingFilter: Record<string, any> = {};
+
   const bedrooms = Number(query.bedrooms);
   if (!isNaN(bedrooms)) {
-    const listings = await Listing.find({ bedrooms: { $eq: bedrooms } }).select('_id').lean();
-    filter.listing = { $in: listings.map((listing: any) => listing._id) };
+    listingFilter.bedrooms = bedrooms;
   }
 
-  // filter by bathrooms
   const bathrooms = Number(query.bathrooms);
   if (!isNaN(bathrooms)) {
-    const listings = await Listing.find({ bathrooms: { $eq: bathrooms } }).select('_id').lean();
-    filter.listing = { $in: listings.map((listing: any) => listing._id) };
+    listingFilter.bathrooms = bathrooms;
   }
 
-  // filter by totalArea
   const minArea = Number(query.minArea);
   const maxArea = Number(query.maxArea);
   if (!isNaN(minArea) && !isNaN(maxArea)) {
-    const listings = await Listing.find({ totalArea: { $gte: minArea, $lte: maxArea } }).select('_id').lean();
-    filter.listing = { $in: listings.map((listing: any) => listing._id) };
+    listingFilter.totalArea = { $gte: minArea, $lte: maxArea };
   }
 
-  const propertyQuery = new QueryBuilder(Property.find(filter).populate('listing'), query)
+  // Only query the Listing collection if at least one listing filter was requested
+  if (Object.keys(listingFilter).length > 0) {
+    const listings = await Listing.find(listingFilter).select('_id').lean();
+
+    const listingIds = listings.map((listing: any) => listing._id);
+    propertyFilter.listing = { $in: listingIds };
+  }
+
+  // 4. Execute main Property Query
+  const propertyQuery = new QueryBuilder(Property.find(propertyFilter).populate('listing'), query)
     .search(['title', 'description'])
     .filter([
       'userId',
@@ -210,10 +216,11 @@ const getAllProperties = async (query: Record<string, unknown>) => {
     propertyQuery.getPaginationInfo(),
   ]);
 
-  // if query has userId then attach wishlist
+  // 5. Attach wishlist status if userId is present
   if (query.userId) {
     const wishlist = await Wishlist.find({ user: query.userId }).lean();
-    const wishlistMap = new Map(wishlist.map((wishlist: any) => [wishlist.property.toString(), wishlist]));
+    const wishlistMap = new Map(wishlist.map((item: any) => [item.property.toString(), item]));
+
     data.forEach((property: any) => {
       property.wishlist = wishlistMap.has(property._id.toString());
     });
