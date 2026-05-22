@@ -109,9 +109,14 @@ const updateKycToDB = async (
   userId: string,
   payload: { documents: string[] },
 ): Promise<Partial<IUser | null>> => {
-  const existingUser = await User.isExistUserById(userId);
+  const existingUser = await User.findById(userId).select('+verification');
   if (!existingUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  // check if user already verified
+  if (existingUser?.verification?.status === VerificationStatus.Verified) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "You are already verified!");
   }
 
   const result = await User.findByIdAndUpdate(
@@ -132,9 +137,10 @@ const updateKycToDB = async (
   if (
     payload.documents &&
     payload.documents.length > 0 &&
-    existingUser?.verification?.documents?.length > 0
+    existingUser?.verification?.documents &&
+    existingUser.verification.documents.length > 0
   ) {
-    existingUser?.verification?.documents?.forEach((doc: string) => {
+    existingUser.verification.documents.forEach((doc: string) => {
       unlinkFile(doc);
     });
   }
@@ -147,6 +153,11 @@ const reviewKycToDB = async (
   userId: string,
   payload: { status: VerificationStatus; reviewNotes?: string; reviewedBy: string },
 ): Promise<Partial<IUser | null>> => {
+  const existingUser = await User.findById(userId).select('+verification');
+  if (!existingUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
   const result = await User.findByIdAndUpdate(
     userId,
     {
@@ -156,6 +167,8 @@ const reviewKycToDB = async (
           reviewNotes: payload.reviewNotes,
           reviewedAt: new Date(),
           reviewedBy: new Types.ObjectId(payload.reviewedBy),
+          documents: existingUser?.verification?.documents,
+          submittedAt: existingUser?.verification?.submittedAt,
         },
       },
     },
