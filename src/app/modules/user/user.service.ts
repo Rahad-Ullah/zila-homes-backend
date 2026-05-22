@@ -7,7 +7,7 @@ import unlinkFile from '../../../shared/unlinkFile';
 import generateOTP from '../../../utils/generateOTP';
 import { IUser } from './user.interface';
 import { User } from './user.model';
-import { UserRole, UserStatus } from './user.constant';
+import { UserRole, UserStatus, VerificationStatus } from './user.constant';
 import QueryBuilder from '../../builder/QueryBuilder';
 
 const createUserToDB = async (payload: Partial<IUser>) => {
@@ -102,6 +102,44 @@ const updateProfileToDB = async (
   return updateDoc;
 };
 
+// ------------ update kyc ------------
+const updateKycToDB = async (
+  userId: string,
+  payload: { documents: string[] },
+): Promise<Partial<IUser | null>> => {
+  const existingUser = await User.isExistUserById(userId);
+  if (!existingUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  const result = await User.findByIdAndUpdate(
+    userId,
+    {
+      $set: {
+        verification: {
+          documents: payload.documents,
+          status: VerificationStatus.Pending,
+          submittedAt: new Date(),
+        },
+      },
+    },
+    { new: true },
+  );
+
+  //unlink file here
+  if (
+    payload.documents &&
+    payload.documents.length > 0 &&
+    existingUser?.verification?.documents?.length > 0
+  ) {
+    existingUser?.verification?.documents?.forEach((doc: string) => {
+      unlinkFile(doc);
+    });
+  }
+
+  return result;
+};
+
 // ------------ update user status ------------
 const updateStatusToDB = async (
   id: string,
@@ -122,7 +160,7 @@ const updateStatusToDB = async (
 // ------------ get all users ------------
 const getAllUsersFromDB = async (query: Record<string, unknown>) => {
   const userQuery = new QueryBuilder(
-    User.find({ isDeleted: false, role: { $ne: UserRole.SuperAdmin } }),
+    User.find({ isDeleted: false, role: { $ne: UserRole.SuperAdmin } }).select('+verification'),
     query,
   )
     .search(['firstName', 'lastName', 'email'])
@@ -144,6 +182,7 @@ export const UserService = {
   getSingleUserFromDB,
   getProfileFromDB,
   updateProfileToDB,
+  updateKycToDB,
   updateStatusToDB,
   getAllUsersFromDB,
 };

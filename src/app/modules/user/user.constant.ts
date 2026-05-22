@@ -12,3 +12,10 @@ export enum UserStatus {
   Inactive = 'inactive',
   Blocked = 'blocked',
 }
+
+export enum VerificationStatus {
+  Unverified = 'unverified',
+  Pending = 'pending',
+  Verified = 'verified',
+  Rejected = 'rejected',
+}

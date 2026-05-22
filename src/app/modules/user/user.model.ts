@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt';
-import { model, Schema } from 'mongoose';
+import { model, Schema, Types } from 'mongoose';
 import config from '../../../config';
 import { IUser, UserModal } from './user.interface';
-import { UserRole, UserStatus } from './user.constant';
+import { UserRole, UserStatus, VerificationStatus } from './user.constant';
 import { autoIncrementPlugin } from '../../../DB/autoIncrementPlugin';
 
 const userSchema = new Schema<IUser, UserModal>(
@@ -97,6 +97,37 @@ const userSchema = new Schema<IUser, UserModal>(
     isDeleted: {
       type: Boolean,
       default: false,
+    },
+    verification: {
+      type: {
+        status: {
+          type: String,
+          enum: Object.values(VerificationStatus),
+          default: VerificationStatus.Unverified,
+        },
+        documents: {
+          type: [String],
+          default: [],
+        },
+        submittedAt: {
+          type: Date,
+          default: null,
+        },
+        reviewNotes: {
+          type: String,
+          default: '',
+        },
+        reviewedAt: {
+          type: Date,
+          default: null,
+        },
+        reviewedBy: {
+          type: Types.ObjectId,
+          ref: 'User',
+          default: null,
+        },
+      },
+      select: 0,
     },
     authentication: {
       type: {

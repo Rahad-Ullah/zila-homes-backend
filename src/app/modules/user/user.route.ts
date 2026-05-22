@@ -23,6 +23,14 @@ router.patch(
   UserController.updateProfile,
 );
 
+// update kyc
+router.patch(
+  '/kyc',
+  auth(UserRole.Customer, UserRole.Driver, UserRole.Host, UserRole.Owner),
+  fileUploadHandler(),
+  UserController.updateKyc,
+);
+
 // update user status
 router.patch(
   '/status/:id',

@@ -1,9 +1,13 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import catchAsync from '../../../shared/catchAsync';
-import { getSingleFilePath } from '../../../shared/getFilePath';
+import {
+  getMultipleFilesPath,
+  getSingleFilePath,
+} from '../../../shared/getFilePath';
 import sendResponse from '../../../shared/sendResponse';
 import { UserService } from './user.service';
+import ApiError from '../../../errors/ApiError';
 
 const createUser = catchAsync(async (req: Request, res: Response) => {
   const { ...userData } = req.body;
@@ -58,6 +62,25 @@ const updateProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// update kyc
+const updateKyc = catchAsync(async (req: Request, res: Response) => {
+  const docs = getMultipleFilesPath(req.files, 'doc') || [];
+  const images = getMultipleFilesPath(req.files, 'image') || [];
+  const documents = [...docs, ...images];
+  if (!documents || documents?.length === 0) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Please upload documents');
+  }
+
+  const result = await UserService.updateKycToDB(req.user.id, { documents });
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'KYC updated successfully',
+    data: result,
+  });
+});
+
 // update user status
 const updateStatus = catchAsync(async (req: Request, res: Response) => {
   const result = await UserService.updateStatusToDB(req.params.id, req.body);
@@ -88,6 +111,7 @@ export const UserController = {
   getUserProfile,
   getSingleUser,
   updateProfile,
+  updateKyc,
   updateStatus,
   getAllUsers,
 };

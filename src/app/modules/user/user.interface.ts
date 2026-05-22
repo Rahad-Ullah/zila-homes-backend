@@ -1,8 +1,8 @@
-import { Model, ObjectId } from 'mongoose';
-import { UserRole, UserStatus } from './user.constant';
+import { Model, Types } from 'mongoose';
+import { UserRole, UserStatus, VerificationStatus } from './user.constant';
 
 export interface IUser {
-  _id: ObjectId;
+  _id: Types.ObjectId;
   uid: string;
   firstName: string;
   lastName: string;
@@ -26,6 +26,14 @@ export interface IUser {
   isVerified: boolean;
   isOnline: boolean;
   isDeleted: boolean;
+  verification?: {
+    status: VerificationStatus;
+    documents: string[];
+    submittedAt?: Date;
+    reviewNotes?: string;
+    reviewedAt?: Date;
+    reviewedBy?: Types.ObjectId;
+  }
   authentication?: {
     isResetPassword: boolean;
     oneTimeCode: number;
