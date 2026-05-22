@@ -31,6 +31,14 @@ router.patch(
   UserController.updateKyc,
 );
 
+// review kyc
+router.patch(
+  '/kyc/:id/review',
+  auth(UserRole.Admin, UserRole.SuperAdmin),
+  validateRequest(UserValidation.reviewKycZodSchema),
+  UserController.reviewKyc,
+);
+
 // update user status
 router.patch(
   '/status/:id',

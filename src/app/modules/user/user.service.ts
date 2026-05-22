@@ -9,6 +9,8 @@ import { IUser } from './user.interface';
 import { User } from './user.model';
 import { UserRole, UserStatus, VerificationStatus } from './user.constant';
 import QueryBuilder from '../../builder/QueryBuilder';
+import { Types } from 'mongoose';
+import { sendNotifications } from '../../../helpers/notificationHelper';
 
 const createUserToDB = async (payload: Partial<IUser>) => {
   // check if user is exist
@@ -140,6 +142,42 @@ const updateKycToDB = async (
   return result;
 };
 
+// ------------ review kyc ------------
+const reviewKycToDB = async (
+  userId: string,
+  payload: { status: VerificationStatus; reviewNotes?: string; reviewedBy: string },
+): Promise<Partial<IUser | null>> => {
+  const result = await User.findByIdAndUpdate(
+    userId,
+    {
+      $set: {
+        verification: {
+          status: payload.status,
+          reviewNotes: payload.reviewNotes,
+          reviewedAt: new Date(),
+          reviewedBy: new Types.ObjectId(payload.reviewedBy),
+        },
+      },
+    },
+    { new: true },
+  );
+
+  // send notification to user
+  if (result) {
+    sendNotifications({
+      type: 'kyc_review',
+      title: 'Verification Review',
+      message: `Your verification request has been ${payload.status}`,
+      receiver: result._id,
+      referenceId: result._id.toString(),
+    }).catch((error) => {
+      console.error('KYC Review Notification Failed:', error);
+    });
+  }
+
+  return result;
+};
+
 // ------------ update user status ------------
 const updateStatusToDB = async (
   id: string,
@@ -183,6 +221,7 @@ export const UserService = {
   getProfileFromDB,
   updateProfileToDB,
   updateKycToDB,
+  reviewKycToDB,
   updateStatusToDB,
   getAllUsersFromDB,
 };
