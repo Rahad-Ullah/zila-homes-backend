@@ -2,6 +2,7 @@ import { Stripe } from 'stripe/cjs/stripe.core';
 import { Transaction } from '../../modules/transaction/transaction.model';
 import { TransactionGateway, TransactionReferenceType, TransactionStatus, TransactionType } from '../../modules/transaction/transaction.constants';
 import { Reservation } from '../../modules/reservation/reservation.model';
+import { stripe } from '../../../config/stripe';
 
 
 // ----------------- on checkout session completed -----------------
@@ -15,12 +16,19 @@ export const onCheckoutSessionCompleted = async (event: Stripe.Event) => {
     return;
   }
 
-  // 2. Format financial data
-  const totalAmountCents = session.amount_total || 0;
-  const totalAmount = totalAmountCents / 100;
-
-  // 3. Capture the Stripe Payment Intent ID (Crucial for processing future refunds)
+  // 2. Capture the Stripe Payment Intent ID (Crucial for processing future refunds)
   const paymentIntentId = session.payment_intent as string;
+  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId,
+    { expand: ['latest_charge.balance_transaction'] }
+  );
+  const balanceTransaction = (paymentIntent.latest_charge as Stripe.Charge)?.balance_transaction as Stripe.BalanceTransaction;
+
+  // 3. Format financial data
+  const totalAmount = balanceTransaction.amount / 100;
+  const gatewayFee = (balanceTransaction?.fee / 100) || 0;
+  const platformFeePercentage = 10;
+  const platformFee = (totalAmount * platformFeePercentage) / 100;
+  const netAmount = totalAmount - platformFee;
 
   const isPaid = session.payment_status === 'paid';
 
@@ -42,6 +50,10 @@ export const onCheckoutSessionCompleted = async (event: Stripe.Event) => {
         gatewayReferenceId: paymentIntentId,
         paymentMethod: session.payment_method_types?.[0] || 'card',
         amount: totalAmount,
+        gatewayFee: gatewayFee,
+        platformFeePercentage: platformFeePercentage,
+        platformFee: platformFee,
+        netAmount: netAmount,
         currency: session.currency?.toUpperCase() || 'USD',
         status: isPaid ? TransactionStatus.Completed : TransactionStatus.Failed,
         isPaid: isPaid,
@@ -76,6 +88,15 @@ export const onCheckoutSessionCompleted = async (event: Stripe.Event) => {
 export const onAsyncPaymentFailed = async (event: Stripe.Event) => {
   const session = event.data.object as Stripe.Checkout.Session;
   const paymentIntentId = session.payment_intent as string;
+  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId,
+    { expand: ['latest_charge.balance_transaction'] }
+  );
+  const balanceTransaction = (paymentIntent.latest_charge as Stripe.Charge)?.balance_transaction as Stripe.BalanceTransaction;
+  const totalAmount = balanceTransaction.amount / 100;
+  const gatewayFee = (balanceTransaction?.fee / 100) || 0;
+  const platformFeePercentage = 10;
+  const platformFee = (totalAmount * platformFeePercentage) / 100;
+  const netAmount = totalAmount - platformFee;
 
   // 1. Extract custom metadata
   const { userId, referenceType, referenceId } = session.metadata || {};
@@ -102,7 +123,11 @@ export const onAsyncPaymentFailed = async (event: Stripe.Event) => {
           gateway: TransactionGateway.Stripe,
           gatewayReferenceId: paymentIntentId,
           paymentMethod: session.payment_method_types?.[0] || 'card',
-          amount: (session.amount_total || 0) / 100,
+          amount: totalAmount,
+          gatewayFee: gatewayFee,
+          platformFeePercentage: platformFeePercentage,
+          platformFee: platformFee,
+          netAmount: netAmount,
           currency: session.currency?.toUpperCase() || 'USD',
           status: TransactionStatus.Failed,
           isPaid: false,
@@ -137,6 +162,16 @@ export const onCheckoutSessionExpired = async (event: Stripe.Event) => {
   const session = event.data.object as Stripe.Checkout.Session;
   const paymentIntentId = session.payment_intent as string;
 
+  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId,
+    { expand: ['latest_charge.balance_transaction'] }
+  );
+  const balanceTransaction = (paymentIntent.latest_charge as Stripe.Charge)?.balance_transaction as Stripe.BalanceTransaction;
+  const totalAmount = balanceTransaction.amount / 100;
+  const gatewayFee = (balanceTransaction?.fee / 100) || 0;
+  const platformFeePercentage = 10;
+  const platformFee = (totalAmount * platformFeePercentage) / 100;
+  const netAmount = totalAmount - platformFee;
+
   // 1. Extract custom metadata
   const { userId, referenceType, referenceId } = session.metadata || {};
   if (!userId || !referenceType || !referenceId) {
@@ -162,7 +197,11 @@ export const onCheckoutSessionExpired = async (event: Stripe.Event) => {
           gateway: TransactionGateway.Stripe,
           gatewayReferenceId: paymentIntentId,
           paymentMethod: session.payment_method_types?.[0] || 'card',
-          amount: (session.amount_total || 0) / 100,
+          amount: totalAmount,
+          gatewayFee: gatewayFee,
+          platformFeePercentage: platformFeePercentage,
+          platformFee: platformFee,
+          netAmount: netAmount,
           currency: session.currency?.toUpperCase() || 'USD',
           status: TransactionStatus.Cancelled,
           isPaid: false,
