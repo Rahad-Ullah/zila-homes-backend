@@ -1,6 +1,6 @@
 import { Model, ObjectId } from 'mongoose';
 import {
-  TransactionProvider,
+  TransactionGateway,
   TransactionReferenceType,
   TransactionStatus,
   TransactionType,
@@ -16,10 +16,14 @@ export interface ITransaction {
     id: ObjectId;
   };
   type: TransactionType;
-  provider: TransactionProvider;
-  providerPaymentIntentId: string;
+  gateway: TransactionGateway;
+  gatewayReferenceId: string;
   paymentMethod: string;
   amount: number;
+  gatewayFee: number;
+  platformFeePercentage: number;
+  platformFee: number;
+  netAmount: number;
   currency: string;
   status: TransactionStatus;
   isPaid: boolean;

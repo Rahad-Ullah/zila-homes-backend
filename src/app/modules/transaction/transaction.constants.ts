@@ -5,7 +5,7 @@ export enum TransactionReferenceType {
     Consultation = 'Consultation',
 }
 
-export enum TransactionProvider {
+export enum TransactionGateway {
     Stripe = 'stripe',
     Chapa = 'chapa',
     Manual = 'manual',

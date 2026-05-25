@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { ITransaction, TransactionModel } from './transaction.interface';
-import { TransactionProvider, TransactionReferenceType, TransactionStatus, TransactionType } from './transaction.constants';
+import { TransactionGateway, TransactionReferenceType, TransactionStatus, TransactionType } from './transaction.constants';
 import { autoIncrementPlugin } from '../../../DB/autoIncrementPlugin';
 
 const transactionSchema = new Schema<ITransaction, TransactionModel>({
@@ -25,32 +25,48 @@ const transactionSchema = new Schema<ITransaction, TransactionModel>({
       refPath: 'reference.type'
     },
   },
-  amount: {
-    type: Number,
+  type: {
+    type: String,
+    enum: TransactionType,
     required: true,
   },
-  currency: {
+  gateway: {
+    type: String,
+    enum: TransactionGateway,
+    required: true,
+    index: true,
+  },
+  gatewayReferenceId: {
     type: String,
     required: true,
+    index: true,
   },
   paymentMethod: {
     type: String,
     required: true,
   },
-  provider: {
-    type: String,
-    enum: TransactionProvider,
+  amount: {
+    type: Number,
     required: true,
-    index: true,
   },
-  providerPaymentIntentId: {
-    type: String,
+  gatewayFee: {
+    type: Number,
     required: true,
-    index: true,
   },
-  type: {
+  platformFeePercentage: {
+    type: Number,
+    required: true,
+  },
+  platformFee: {
+    type: Number,
+    required: true,
+  },
+  netAmount: {
+    type: Number,
+    required: true,
+  },
+  currency: {
     type: String,
-    enum: TransactionType,
     required: true,
   },
   status: {

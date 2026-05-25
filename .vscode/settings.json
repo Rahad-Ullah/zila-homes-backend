@@ -19,5 +19,31 @@
     "type": "shell",
     "command": "npm run lint",
     "runOn": "folderOpen"
-  }
+  },
+  "workbench.colorCustomizations": {
+    "editorCursor.foreground": "#ffffff",
+    "terminalCursor.foreground": "#00D26A",
+    "statusBarItem.warningBackground": "#f1913d",
+    "statusBarItem.warningForeground": "#000000",
+    "statusBarItem.warningHoverBackground": "#f1913d",
+    "statusBarItem.warningHoverForeground": "#00000090",
+    "statusBarItem.remoteBackground": "#fe9e4a",
+    "statusBarItem.remoteForeground": "#000000",
+    "statusBarItem.remoteHoverBackground": "#ffab57",
+    "statusBarItem.remoteHoverForeground": "#00000090",
+    "statusBar.background": "#f1913d",
+    "statusBar.foreground": "#000000",
+    "statusBar.border": "#f1913d",
+    "statusBar.debuggingBackground": "#f1913d",
+    "statusBar.debuggingForeground": "#000000",
+    "statusBar.debuggingBorder": "#f1913d",
+    "statusBar.noFolderBackground": "#f1913d",
+    "statusBar.noFolderForeground": "#000000",
+    "statusBar.noFolderBorder": "#f1913d",
+    "statusBar.prominentBackground": "#f1913d",
+    "statusBar.prominentForeground": "#000000",
+    "statusBar.prominentHoverBackground": "#f1913d",
+    "statusBar.prominentHoverForeground": "#00000090"
+  },
+  "window.title": "zila-homes-backend"
 }

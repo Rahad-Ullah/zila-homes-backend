@@ -1,6 +1,6 @@
 import { Stripe } from 'stripe/cjs/stripe.core';
 import { Transaction } from '../../modules/transaction/transaction.model';
-import { TransactionProvider, TransactionReferenceType, TransactionStatus, TransactionType } from '../../modules/transaction/transaction.constants';
+import { TransactionGateway, TransactionReferenceType, TransactionStatus, TransactionType } from '../../modules/transaction/transaction.constants';
 import { Reservation } from '../../modules/reservation/reservation.model';
 
 
@@ -28,8 +28,8 @@ export const onCheckoutSessionCompleted = async (event: Stripe.Event) => {
     // 4. Create the formal Transaction document inside your MongoDB ledger
     const newTransaction = await Transaction.findOneAndUpdate(
       {
-        provider: TransactionProvider.Stripe,
-        providerPaymentIntentId: paymentIntentId,
+        gateway: TransactionGateway.Stripe,
+        gatewayReferenceId: paymentIntentId,
       },
       {
         user: userId,
@@ -38,8 +38,8 @@ export const onCheckoutSessionCompleted = async (event: Stripe.Event) => {
           id: referenceId,
         },
         type: TransactionType.Payment,
-        provider: TransactionProvider.Stripe,
-        providerPaymentIntentId: paymentIntentId,
+        gateway: TransactionGateway.Stripe,
+        gatewayReferenceId: paymentIntentId,
         paymentMethod: session.payment_method_types?.[0] || 'card',
         amount: totalAmount,
         currency: session.currency?.toUpperCase() || 'USD',
@@ -88,8 +88,8 @@ export const onAsyncPaymentFailed = async (event: Stripe.Event) => {
     // 2. Update or create the transaction document to mark it as Failed
     const transaction = await Transaction.findOneAndUpdate(
       {
-        provider: TransactionProvider.Stripe,
-        providerPaymentIntentId: paymentIntentId
+        gateway: TransactionGateway.Stripe,
+        gatewayReferenceId: paymentIntentId
       },
       {
         $set: {
@@ -99,8 +99,8 @@ export const onAsyncPaymentFailed = async (event: Stripe.Event) => {
             id: referenceId,
           },
           type: TransactionType.Payment,
-          provider: TransactionProvider.Stripe,
-          providerPaymentIntentId: paymentIntentId,
+          gateway: TransactionGateway.Stripe,
+          gatewayReferenceId: paymentIntentId,
           paymentMethod: session.payment_method_types?.[0] || 'card',
           amount: (session.amount_total || 0) / 100,
           currency: session.currency?.toUpperCase() || 'USD',
@@ -148,8 +148,8 @@ export const onCheckoutSessionExpired = async (event: Stripe.Event) => {
     // 2. Update or create the transaction document to mark it as Failed
     const transaction = await Transaction.findOneAndUpdate(
       {
-        provider: TransactionProvider.Stripe,
-        providerPaymentIntentId: paymentIntentId
+        gateway: TransactionGateway.Stripe,
+        gatewayReferenceId: paymentIntentId
       },
       {
         $set: {
@@ -159,8 +159,8 @@ export const onCheckoutSessionExpired = async (event: Stripe.Event) => {
             id: referenceId,
           },
           type: TransactionType.Payment,
-          provider: TransactionProvider.Stripe,
-          providerPaymentIntentId: paymentIntentId,
+          gateway: TransactionGateway.Stripe,
+          gatewayReferenceId: paymentIntentId,
           paymentMethod: session.payment_method_types?.[0] || 'card',
           amount: (session.amount_total || 0) / 100,
           currency: session.currency?.toUpperCase() || 'USD',
