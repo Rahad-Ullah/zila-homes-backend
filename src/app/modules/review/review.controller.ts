@@ -71,6 +71,19 @@ const getAllReviewsByProperty = catchAsync(async (req: Request, res: Response) =
   });
 });
 
+// get my reviews
+const getMyReviews = catchAsync(async (req: Request, res: Response) => {
+  const result = await ReviewServices.getReviewsByCustomer(req.user?.id, req.query);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Reviews fetched successfully',
+    data: result.data,
+    pagination: result.pagination,
+  });
+});
+
 // get all reviews
 const getAllReviews = catchAsync(async (req: Request, res: Response) => {
   const result = await ReviewServices.getAllReviews(req.query);
@@ -90,5 +103,6 @@ export const ReviewController = {
   deleteReview,
   getSingleReview,
   getAllReviewsByProperty,
+  getMyReviews,
   getAllReviews,
 };

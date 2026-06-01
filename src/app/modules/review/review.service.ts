@@ -118,6 +118,22 @@ const getAllReviewsByProperty = async (propertyId: string) => {
   return result;
 };
 
+// ------------- get all reviews by customer -------------
+const getReviewsByCustomer = async (customerId: string, query: Record<string, unknown>) => {
+  const reviewQuery = new QueryBuilder(Review.find({ customer: customerId }), query)
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const [data, pagination] = await Promise.all([
+    reviewQuery.modelQuery.populate('customer', 'firstName lastName email image').populate('property'),
+    reviewQuery.getPaginationInfo(),
+  ]);
+
+  return { data, pagination };
+};
+
 // ------------- get all reviews -------------
 const getAllReviews = async (query: Record<string, unknown>) => {
   const filter = { isDeleted: false } as any;
@@ -153,5 +169,6 @@ export const ReviewServices = {
   deleteReview,
   getSingleReview,
   getAllReviewsByProperty,
+  getReviewsByCustomer,
   getAllReviews,
 };

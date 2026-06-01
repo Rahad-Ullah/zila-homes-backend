@@ -33,7 +33,7 @@ router.delete(
 
 // get review
 router.get(
-    '/:id',
+    '/single/:id',
     validateRequest(ReviewValidations.getReviewValidationSchema),
     ReviewController.getSingleReview,
 );
@@ -43,6 +43,13 @@ router.get(
     '/property/:id',
     validateRequest(ReviewValidations.getReviewValidationSchema),
     ReviewController.getAllReviewsByProperty,
+);
+
+// get my reviews
+router.get(
+    '/my-reviews',
+    auth(UserRole.Customer),
+    ReviewController.getMyReviews,
 );
 
 // get all reviews
