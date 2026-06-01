@@ -3,6 +3,7 @@ import { Transaction } from '../../modules/transaction/transaction.model';
 import { TransactionGateway, TransactionReferenceType, TransactionStatus, TransactionType } from '../../modules/transaction/transaction.constants';
 import { Reservation } from '../../modules/reservation/reservation.model';
 import { stripe } from '../../../config/stripe';
+import { Setting } from '../../modules/setting/setting.model';
 
 
 // ----------------- on checkout session completed -----------------
@@ -22,11 +23,12 @@ export const onCheckoutSessionCompleted = async (event: Stripe.Event) => {
     { expand: ['latest_charge.balance_transaction'] }
   );
   const balanceTransaction = (paymentIntent.latest_charge as Stripe.Charge)?.balance_transaction as Stripe.BalanceTransaction;
+  const setting = await Setting.findOne().select('platformFeePercentage');
 
   // 3. Format financial data
   const totalAmount = balanceTransaction.amount / 100;
   const gatewayFee = (balanceTransaction?.fee / 100) || 0;
-  const platformFeePercentage = 10;
+  const platformFeePercentage = setting?.platformFeePercentage || 0;
   const platformFee = (totalAmount * platformFeePercentage) / 100;
   const netAmount = totalAmount - platformFee;
 
@@ -92,9 +94,10 @@ export const onAsyncPaymentFailed = async (event: Stripe.Event) => {
     { expand: ['latest_charge.balance_transaction'] }
   );
   const balanceTransaction = (paymentIntent.latest_charge as Stripe.Charge)?.balance_transaction as Stripe.BalanceTransaction;
+  const setting = await Setting.findOne().select('platformFeePercentage');
   const totalAmount = balanceTransaction.amount / 100;
   const gatewayFee = (balanceTransaction?.fee / 100) || 0;
-  const platformFeePercentage = 10;
+  const platformFeePercentage = setting?.platformFeePercentage || 0;
   const platformFee = (totalAmount * platformFeePercentage) / 100;
   const netAmount = totalAmount - platformFee;
 
@@ -166,9 +169,10 @@ export const onCheckoutSessionExpired = async (event: Stripe.Event) => {
     { expand: ['latest_charge.balance_transaction'] }
   );
   const balanceTransaction = (paymentIntent.latest_charge as Stripe.Charge)?.balance_transaction as Stripe.BalanceTransaction;
+  const setting = await Setting.findOne().select('platformFeePercentage');
   const totalAmount = balanceTransaction.amount / 100;
   const gatewayFee = (balanceTransaction?.fee / 100) || 0;
-  const platformFeePercentage = 10;
+  const platformFeePercentage = setting?.platformFeePercentage || 0;
   const platformFee = (totalAmount * platformFeePercentage) / 100;
   const netAmount = totalAmount - platformFee;
 
