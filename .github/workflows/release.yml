@@ -24,6 +24,9 @@ jobs:
         with:
           node-version: 24
 
+      - name: Fetch all tags
+        run: git fetch --tags --force
+
       - name: Install semantic-release and plugins
         run: |
           npm install -g semantic-release \
