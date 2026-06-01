@@ -2,6 +2,10 @@ import { Schema, model } from 'mongoose';
 import { ISetting, SettingModel } from './setting.interface';
 
 const settingSchema = new Schema<ISetting, SettingModel>({
+  platformFeePercentage: {
+    type: Number,
+    default: 0,
+  },
   contactInfo: {
     email: {
       type: String,

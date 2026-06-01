@@ -2,6 +2,7 @@ import { Model, ObjectId } from 'mongoose';
 
 export interface ISetting {
   _id: ObjectId;
+  platformFeePercentage: number;
   contactInfo: {
     email: string;
     phone: string;
