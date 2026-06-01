@@ -15,6 +15,7 @@ import { disclaimerRoutes } from '../app/modules/disclaimer/disclaimer.route';
 import { settingRoutes } from '../app/modules/setting/setting.route';
 import { transactionRoutes } from '../app/modules/transaction/transaction.route';
 import { advertisementRoutes } from '../app/modules/advertisement/advertisement.route';
+import { analyticsRoutes } from '../app/modules/analytics/analytics.route';
 const router = express.Router();
 
 const apiRoutes: { path: string; route: any }[] = [
@@ -81,6 +82,10 @@ const apiRoutes: { path: string; route: any }[] = [
   {
     path: '/settings',
     route: settingRoutes,
+  },
+  {
+    path: '/analytics',
+    route: analyticsRoutes,
   },
 ]
 
