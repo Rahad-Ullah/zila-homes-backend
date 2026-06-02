@@ -6,7 +6,7 @@ import { StatusCodes } from 'http-status-codes';
 
 // -------------- get admin overview --------------
 const getAdminOverview = catchAsync(async (req: Request, res: Response) => {
-  const result = await AnalyticsServices.getAdminOverview();
+  const result = await AnalyticsServices.getAdminOverview(req.query);
 
   sendResponse(res, {
     success: true,
