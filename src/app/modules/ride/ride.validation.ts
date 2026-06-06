@@ -15,7 +15,7 @@ const createRideSchema = z.object({
     customer: z.object({
       name: z.string().nonempty('Customer name is required'),
       email: z.string().email('Invalid email address'),
-      phone: z.string().nonempty('Phone number is required'),
+      phone: z.coerce.string().nonempty('Phone number is required'),
     }),
     // Passenger details
     passengerName: z.string().nonempty('Passenger name is required'),

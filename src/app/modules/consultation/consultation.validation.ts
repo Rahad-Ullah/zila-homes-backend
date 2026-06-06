@@ -10,7 +10,7 @@ const createConsultationValidation = z.object({
       customer: z.object({
         name: z.string().nonempty('Name is required'),
         email: z.string().email('Email is required'),
-        phone: z.string().nonempty('Phone is required'),
+        phone: z.coerce.string().nonempty('Phone is required'),
       }),
       message: z.string().nonempty('Message is required'),
     })

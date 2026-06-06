@@ -20,7 +20,7 @@ const createUserZodSchema = z.object({
       password: z
         .string({ required_error: 'Password is required' })
         .min(8, 'Password must be at least 8 characters long'),
-      phone: z.string({ required_error: 'Phone is required' }).optional(),
+      phone: z.coerce.string({ required_error: 'Phone is required' }).optional(),
       image: z.string().optional(),
     })
     .strict(),
@@ -32,7 +32,7 @@ const updateUserZodSchema = z.object({
       firstName: z.string().optional(),
       lastName: z.string().optional(),
       email: z.string().email('Invalid email address').optional(),
-      phone: z.string().optional(),
+      phone: z.coerce.string().optional(),
       image: z.string().optional(),
     })
     .strict(),

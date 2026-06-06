@@ -6,7 +6,7 @@ const updateSettingValidation = z.object({
     platformFeePercentage: z.number().min(0).max(100).optional(),
     contactInfo: z.object({
       email: z.string().email().optional(),
-      phone: z.string().optional(),
+      phone: z.coerce.string().optional(),
       whatsApp: z.string().optional(),
       address: z.string().optional(),
       location: z.object({

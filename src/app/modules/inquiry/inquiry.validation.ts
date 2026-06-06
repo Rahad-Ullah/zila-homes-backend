@@ -9,7 +9,7 @@ const createInquiryValidation = z.object({
     customer: z.object({
       name: z.string().nonempty('Customer name is required'),
       email: z.string().email('Invalid email address'),
-      phone: z.string().nonempty('Customer phone is required'),
+      phone: z.coerce.string().nonempty('Customer phone is required'),
     }),
     message: z.string().nonempty('Message is required'),
   }).strict(),
