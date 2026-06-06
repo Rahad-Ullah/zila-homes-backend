@@ -104,13 +104,43 @@ const fileUploadHandler = (): RequestHandler => {
   // wrap Multer upload in a proper Express RequestHandler
   return (req: Request, res: Response, next: NextFunction) => {
     upload(req as any, res as any, err => {
-      if (err instanceof ApiError) {
-        return res.status(err.statusCode).json({ message: err.message });
-      } else if (err) {
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .json({ message: 'File upload error' });
+      if (err) {
+        return next(err instanceof ApiError ? err : new ApiError(StatusCodes.BAD_REQUEST, 'File upload error'));
       }
+
+      // --- AUTO-PARSING LOGIC FOR ZOD VALIDATION ---
+      if (req.body) {
+        for (const key in req.body) {
+          const value = req.body[key];
+
+          if (typeof value === 'string') {
+            const trimmedValue = value.trim();
+
+            try {
+              // 1. Parse JSON Strings (Arrays like '["NY", "LA"]' or Objects like '{"city": "Dhaka"}')
+              if (
+                (trimmedValue.startsWith('[') && trimmedValue.endsWith(']')) ||
+                (trimmedValue.startsWith('{') && trimmedValue.endsWith('}'))
+              ) {
+                req.body[key] = JSON.parse(trimmedValue);
+              }
+              // 2. Parse Booleans ('true' / 'false')
+              else if (trimmedValue === 'true' || trimmedValue === 'false') {
+                req.body[key] = JSON.parse(trimmedValue);
+              }
+              // 3. Parse Numbers ('25', '10.5')
+              // Ensuring it's a valid number and not an empty string or spaces
+              else if (trimmedValue !== '' && !isNaN(Number(trimmedValue))) {
+                req.body[key] = Number(trimmedValue);
+              }
+            } catch (e) {
+              // Fail silently: If parsing breaks, we keep it as a raw string 
+              // and let Zod handle the validation failure downstream.
+            }
+          }
+        }
+      }
+
       next();
     });
   };

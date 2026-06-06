@@ -58,7 +58,7 @@ const getSingleUserFromDB = async (id: string): Promise<Partial<IUser>> => {
 };
 
 const getProfileFromDB = async (id: string): Promise<Partial<IUser>> => {
-  const user = await User.isExistUserById(id);
+  const user = await User.findById(id).select('+verification');
   if (!user) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
