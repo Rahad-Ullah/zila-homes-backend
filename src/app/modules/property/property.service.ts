@@ -250,6 +250,7 @@ const getTopCities = async () => {
     {
       $match: {
         isDeleted: false,
+        'address.country': 'Ethiopia',
       },
     },
     {
