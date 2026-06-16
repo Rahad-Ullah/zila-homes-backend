@@ -34,6 +34,12 @@ router.delete(
     BlogController.deleteBlog
 );
 
+// get blog categories
+router.get(
+    '/categories',
+    BlogController.getBlogCategories
+);
+
 // get single blog
 router.get(
     '/:id',

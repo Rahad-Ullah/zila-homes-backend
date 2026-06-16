@@ -101,10 +101,17 @@ const getAllBlogs = async (query: Record<string, unknown>) => {
   return { data, pagination };
 };
 
+// ----------- get blog categories -----------
+const getBlogCategories = async () => {
+  const categories = await Blog.distinct('category');
+  return categories;
+};
+
 export const BlogServices = {
   createBlog,
   updateBlog,
   deleteBlog,
   getSingleBlog,
   getAllBlogs,
+  getBlogCategories,
 };

@@ -77,10 +77,23 @@ const getAllBlogs = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get blog categories controller
+const getBlogCategories = catchAsync(async (req: Request, res: Response) => {
+  const result = await BlogServices.getBlogCategories();
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Blog categories fetched successfully',
+    data: result,
+  });
+});
+
 export const BlogController = {
   createBlog,
   updateBlog,
   deleteBlog,
   getSingleBlog,
   getAllBlogs,
+  getBlogCategories,
 };
