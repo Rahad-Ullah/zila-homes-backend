@@ -8,6 +8,8 @@ import QueryBuilder from '../../builder/QueryBuilder';
 import { User } from '../user/user.model';
 import { stripe } from '../../../config/stripe';
 import { IUser } from '../user/user.interface';
+import { Property } from '../property/property.model';
+import { Reservation } from '../reservation/reservation.model';
 
 // ------------- create Stripe checkout session ----------------
 const createStripeCheckoutSession = async (
@@ -120,8 +122,20 @@ const getAllTransactions = async (query: Record<string, unknown>) => {
     filter.user = users.map(user => user._id);
   }
 
+  // pre-filter host
+  if (query.host) {
+    const properties = await Property.find({
+      provider: query.host,
+      isDeleted: false,
+    }).select('_id');
+    const reservations = await Reservation.find({
+      property: { $in: properties.map(property => property._id) },
+    }).select('_id');
+    filter['reference.id'] = { $in: reservations.map(reservation => reservation._id) }
+  }
+  
   const transactionQuery = new QueryBuilder(Transaction.find(filter), query)
-    .filter()
+    .filter(['host'])
     .sort()
     .paginate()
     .fields();
