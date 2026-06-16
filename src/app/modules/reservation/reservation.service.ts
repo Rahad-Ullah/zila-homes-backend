@@ -108,8 +108,8 @@ const getReservationById = async (id: string): Promise<IReservation> => {
 
 // -------------- get all reservations --------------
 const getAllReservations = async (query: Record<string, unknown>) => {
-  // prefilter
-  const filter: any = { isDeleted: false }
+  // pre-filter
+  const filter: any = { isDeleted: false };
   if (query.searchTerm) {
     const customers = await User.find({
       $or: [
@@ -122,17 +122,24 @@ const getAllReservations = async (query: Record<string, unknown>) => {
     filter.customer = { $in: customers.map(customer => customer._id) };
   }
 
-  const reservationQuery = new QueryBuilder(
-    Reservation.find(filter),
-    query,
-  )
-    .filter()
+  if (query.provider) {
+    const properties = await Property.find({
+      provider: query.provider,
+    }).select('_id');
+    filter.property = { $in: properties.map(property => property._id) };
+  }
+
+  const reservationQuery = new QueryBuilder(Reservation.find(filter), query)
+    .filter(['provider'])
     .sort()
     .paginate()
     .fields();
 
   const [data, pagination] = await Promise.all([
-    reservationQuery.modelQuery.populate('property').populate('customer').populate('transaction'),
+    reservationQuery.modelQuery
+      .populate('property')
+      .populate('customer')
+      .populate('transaction'),
     reservationQuery.getPaginationInfo(),
   ]);
 
