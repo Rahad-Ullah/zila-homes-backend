@@ -176,6 +176,10 @@ const getAllProperties = async (query: Record<string, unknown>) => {
   // 3. Build Sub-Query Filter for Listings (FIXES THE OVERWRITE BUG)
   const listingFilter: Record<string, any> = {};
 
+  if (query['listingPurpose']) {
+    listingFilter.purpose = query['listingPurpose'];
+  }
+
   const bedrooms = Number(query.bedrooms);
   if (!isNaN(bedrooms)) {
     listingFilter.bedrooms = bedrooms;
@@ -201,7 +205,10 @@ const getAllProperties = async (query: Record<string, unknown>) => {
   }
 
   // 4. Execute main Property Query
-  const propertyQuery = new QueryBuilder(Property.find(propertyFilter).populate('listing'), query)
+  const propertyQuery = new QueryBuilder(
+    Property.find(propertyFilter).populate('listing'),
+    query,
+  )
     .search(['title', 'description'])
     .filter([
       'userId',
@@ -213,6 +220,7 @@ const getAllProperties = async (query: Record<string, unknown>) => {
       'bathrooms',
       'minArea',
       'maxArea',
+      'listingPurpose',
     ])
     .sort()
     .paginate()
