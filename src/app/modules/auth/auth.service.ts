@@ -23,14 +23,19 @@ const loginUserFromDB = async (payload: ILoginData) => {
   const { email, password } = payload;
   const isExistUser = await User.findOne({ email }).select('+password');
   if (!isExistUser) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, config.node_env === 'development' ? "User doesn't exist!" : 'Invalid email or password');
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      config.node_env === 'development'
+        ? "User doesn't exist!"
+        : 'Invalid email or password',
+    );
   }
 
   // check if user is deleted
   if (isExistUser.isDeleted) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
-      'It looks like your account has been deleted or deactivated.'
+      'It looks like your account has been deleted or deactivated.',
     );
   }
 
@@ -38,7 +43,7 @@ const loginUserFromDB = async (payload: ILoginData) => {
   if (!isExistUser.isVerified) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
-      'Please verify your account, then try to login again'
+      'Please verify your account, then try to login again',
     );
   }
 
@@ -46,23 +51,43 @@ const loginUserFromDB = async (payload: ILoginData) => {
   if (isExistUser.status !== UserStatus.Active) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
-      'It looks like your account has been suspended or deactivated.'
+      'It looks like your account has been suspended or deactivated.',
     );
   }
 
   //check match password
   if (!(await User.isMatchPassword(password, isExistUser.password))) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, config.node_env === 'development' ? 'Password is incorrect!' : 'Invalid email or password');
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      config.node_env === 'development'
+        ? 'Password is incorrect!'
+        : 'Invalid email or password',
+    );
   }
 
   //create access token
   const accessToken = jwtHelper.createToken(
     { id: isExistUser._id, role: isExistUser.role, email: isExistUser.email },
     config.jwt.jwt_secret as Secret,
-    config.jwt.jwt_expire_in as string
+    config.jwt.jwt_expire_in as string,
   );
 
-  return { accessToken, role: isExistUser.role };
+  // refresh token
+  const refreshToken = jwtHelper.createToken(
+    { id: isExistUser._id, role: isExistUser.role, email: isExistUser.email },
+    config.jwt.jwt_refresh_secret as Secret,
+    config.jwt.jwt_refresh_expire_in as string,
+  );
+
+  return {
+    accessToken,
+    refreshToken,
+    role: isExistUser.role,
+    _id: isExistUser._id,
+    firstName: isExistUser.firstName,
+    lastName: isExistUser.lastName,
+    email: isExistUser.email,
+  };
 };
 
 //forget password
