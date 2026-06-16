@@ -149,8 +149,17 @@ const getAllReviews = async (query: Record<string, unknown>) => {
     filter.customer = { $in: users.map(user => user._id) };
   }
 
+  // pre-filter provider
+  if (query.provider) {
+    const properties = await Property.find({
+      provider: query.provider,
+      isDeleted: false,
+    }).select('_id');
+    filter.property = { $in: properties.map(property => property._id) };
+  }
+
   const reviewQuery = new QueryBuilder(Review.find(filter), query)
-    .filter()
+    .filter(['provider'])
     .sort()
     .paginate()
     .fields();
@@ -161,7 +170,7 @@ const getAllReviews = async (query: Record<string, unknown>) => {
   ]);
 
   return { data, pagination };
-};
+};;;
 
 export const ReviewServices = {
   createReview,
