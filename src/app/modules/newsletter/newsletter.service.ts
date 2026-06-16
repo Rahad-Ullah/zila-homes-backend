@@ -7,9 +7,22 @@ import ApiError from '../../../errors/ApiError';
 
 // ----------- subscribe newsletter -----------
 const subscribeNewsletter = async (payload: INewsletter): Promise<INewsletter> => {
+  // check if email already exists
+  const existingEmail = await Newsletter.findOne({
+    email: payload.email,
+    status: NewsletterStatus.Subscribed,
+  });
+  if (existingEmail) {
+    throw new ApiError(StatusCodes.CONFLICT, 'You are already subscribed');
+  }
+
   const result = await Newsletter.findOneAndUpdate(
     { email: payload.email },
-    { ...payload, subscribedAt: new Date(), status: NewsletterStatus.Subscribed },
+    {
+      ...payload,
+      subscribedAt: new Date(),
+      status: NewsletterStatus.Subscribed,
+    },
     { upsert: true, new: true },
   );
   return result;
