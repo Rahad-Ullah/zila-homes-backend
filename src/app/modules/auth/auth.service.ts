@@ -83,10 +83,8 @@ const loginUserFromDB = async (payload: ILoginData) => {
     accessToken,
     refreshToken,
     role: isExistUser.role,
-    _id: isExistUser._id,
-    firstName: isExistUser.firstName,
-    lastName: isExistUser.lastName,
     email: isExistUser.email,
+    _id: isExistUser._id,
   };
 };
 
