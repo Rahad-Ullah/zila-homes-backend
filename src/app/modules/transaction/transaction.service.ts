@@ -25,6 +25,9 @@ const createStripeCheckoutSession = async (
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
     payment_method_types: ['card'],
+    payment_intent_data: {
+      capture_method: 'automatic',
+    },
     line_items: [
       {
         price_data: {
@@ -32,7 +35,7 @@ const createStripeCheckoutSession = async (
           product_data: {
             name: `Payment for ${reference.type}`,
           },
-          unit_amount: Math.round(amount * 100),  // amount is in cents
+          unit_amount: Math.round(amount * 100), // amount is in cents
         },
         quantity: 1,
       },
@@ -45,7 +48,7 @@ const createStripeCheckoutSession = async (
       userId: user._id.toString(),
       referenceType: reference.type,
       referenceId: reference.id,
-    }
+    },
   });
 
   return {
