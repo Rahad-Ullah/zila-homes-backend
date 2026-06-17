@@ -34,6 +34,19 @@ const updateUserZodSchema = z.object({
       email: z.string().email('Invalid email address').optional(),
       phone: z.coerce.string().optional(),
       image: z.string().optional(),
+      address: z
+        .object({
+          street: z.string().optional(),
+          city: z.string().optional(),
+          state: z.string().optional(),
+          postalCode: z.string().optional(),
+          country: z.string().optional(),
+        })
+        .optional(),
+      location: z.object({
+        type: z.string().optional(),
+        coordinates: z.array(z.number()).optional(),
+      }),
     })
     .strict(),
 });
