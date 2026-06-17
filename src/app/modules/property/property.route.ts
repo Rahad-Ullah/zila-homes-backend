@@ -11,7 +11,7 @@ const router = express.Router();
 // create accommodation
 router.post(
     '/accommodation/create',
-    auth(UserRole.Admin, UserRole.SuperAdmin),
+    auth(UserRole.Host),
     fileUploadHandler(),
     validateRequest(PropertyValidations.createAccommodationSchema),
     PropertyController.createAccommodation,
@@ -20,7 +20,7 @@ router.post(
 // update accommodation
 router.patch(
     '/accommodation/:id',
-    auth(UserRole.Admin, UserRole.SuperAdmin),
+    auth(UserRole.Host, UserRole.Admin, UserRole.SuperAdmin),
     fileUploadHandler(),
     validateRequest(PropertyValidations.updateAccommodationSchema),
     PropertyController.updateAccommodation,
@@ -29,7 +29,7 @@ router.patch(
 // create listing
 router.post(
     '/listing/create',
-    auth(UserRole.Host),
+    auth(UserRole.Admin, UserRole.SuperAdmin),
     fileUploadHandler(),
     validateRequest(PropertyValidations.createListingSchema),
     PropertyController.createListing,
@@ -38,7 +38,7 @@ router.post(
 // update listing
 router.patch(
     '/listing/:id',
-    auth(UserRole.Host, UserRole.Admin, UserRole.SuperAdmin),
+    auth(UserRole.Admin, UserRole.SuperAdmin),
     fileUploadHandler(),
     validateRequest(PropertyValidations.updateListingSchema),
     PropertyController.updateListing,
@@ -47,7 +47,7 @@ router.patch(
 // delete property
 router.delete(
     '/:id',
-    auth(UserRole.Host, UserRole.Admin, UserRole.SuperAdmin),
+    auth(UserRole.Admin, UserRole.SuperAdmin),
     validateRequest(PropertyValidations.deletePropertySchema),
     PropertyController.deleteProperty,
 );
