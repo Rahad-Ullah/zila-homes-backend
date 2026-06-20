@@ -9,8 +9,8 @@ import ApiError from '../../../errors/ApiError';
 
 // create accommodation
 const createAccommodation = catchAsync(async (req: Request, res: Response) => {
-  const images = getMultipleFilesPath(req, 'image');
-  const videoUrl = getSingleFilePath(req, 'media');
+  const images = getMultipleFilesPath(req.files, 'image');
+  const videoUrl = getSingleFilePath(req.files, 'media');
   // check if images and videoUrl is empty
   if (!Array.isArray(images) || images.length === 0) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Minimum 1 image is required');
@@ -37,8 +37,8 @@ const createAccommodation = catchAsync(async (req: Request, res: Response) => {
 // update accommodation
 const updateAccommodation = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const images = getMultipleFilesPath(req, 'image');
-  const videoUrl = getSingleFilePath(req, 'media');
+  const images = getMultipleFilesPath(req.files, 'image');
+  const videoUrl = getSingleFilePath(req.files, 'media');
   const payload = {
     images,
     videoUrl,
@@ -57,8 +57,8 @@ const updateAccommodation = catchAsync(async (req: Request, res: Response) => {
 
 // create listing
 const createListing = catchAsync(async (req: Request, res: Response) => {
-  const images = getMultipleFilesPath(req, 'image');
-  const videoUrl = getSingleFilePath(req, 'media');
+  const images = getMultipleFilesPath(req.files, 'image');
+  const videoUrl = getSingleFilePath(req.files, 'media');
   // check if images and videoUrl is empty
   if (!Array.isArray(images) || images.length === 0) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Minimum 1 image is required');
@@ -88,8 +88,8 @@ const createListing = catchAsync(async (req: Request, res: Response) => {
 // update listing
 const updateListing = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const images = getMultipleFilesPath(req, 'image');
-  const videoUrl = getSingleFilePath(req, 'media');
+  const images = getMultipleFilesPath(req.files, 'image');
+  const videoUrl = getSingleFilePath(req.files, 'media');
   const payload = {
     images,
     videoUrl,
