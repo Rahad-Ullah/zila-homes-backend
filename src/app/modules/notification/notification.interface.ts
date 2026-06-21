@@ -1,8 +1,9 @@
 import { Model, Types } from 'mongoose';
+import { NotificationType } from './notification.constant';
 
 export interface INotification {
   _id: Types.ObjectId;
-  type: string;
+  type: NotificationType;
   title: string;
   message: string;
   receiver: Types.ObjectId;

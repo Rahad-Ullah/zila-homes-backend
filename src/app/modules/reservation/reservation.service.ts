@@ -8,18 +8,27 @@ import { PropertyCategory } from '../property/property.constants';
 import { User } from '../user/user.model';
 import { TransactionServices } from '../transaction/transaction.service';
 import { TransactionReferenceType } from '../transaction/transaction.constants';
+import { sendNotifications } from '../../../helpers/notificationHelper';
+import { NotificationType } from '../notification/notification.constant';
+import { Types } from 'mongoose';
 
 // -------------- create reservation --------------
 const createReservation = async (
   payload: IReservation & { country: string },
 ) => {
   // check if accommodation is available
-  const property = await Property.findOne({ _id: payload.property, isDeleted: false });
+  const property = await Property.findOne({
+    _id: payload.property,
+    isDeleted: false,
+  });
   if (!property) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Property not found');
   }
   if (property.category !== PropertyCategory.Accommodation) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Property is not an accommodation');
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'Property is not an accommodation',
+    );
   }
 
   // check if the customer is valid
@@ -30,8 +39,9 @@ const createReservation = async (
 
   // calculate units and price from dates
   const units = Math.ceil(
-    (new Date(payload.checkOut).getTime() - new Date(payload.checkIn).getTime()) /
-    (1000 * 60 * 60 * 24),
+    (new Date(payload.checkOut).getTime() -
+      new Date(payload.checkIn).getTime()) /
+      (1000 * 60 * 60 * 24),
   );
   const pricePerUnit = property.price;
   const subtotal = units * pricePerUnit;
@@ -56,13 +66,27 @@ const createReservation = async (
   }
 
   // handle international payment
-  const payment = await TransactionServices.createStripeCheckoutSession(customer, {
-    amount: total,
-    currency: 'USD',
-    reference: {
-      type: TransactionReferenceType.Reservation,
-      id: reservation._id.toString(),
+  const payment = await TransactionServices.createStripeCheckoutSession(
+    customer,
+    {
+      amount: total,
+      currency: 'USD',
+      reference: {
+        type: TransactionReferenceType.Reservation,
+        id: reservation._id.toString(),
+      },
     },
+  );
+
+  // send notification to the host
+  sendNotifications({
+    type: NotificationType.Reservation,
+    receiver: property.provider as unknown as Types.ObjectId,
+    title: 'New Reservation',
+    message: `You have a new reservation for ${property.title}!`,
+    referenceId: property._id.toString(),
+  }).catch(error => {
+    console.error('Failed to send background notification on reservation:', error);
   });
 
   return payment;

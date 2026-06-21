@@ -11,6 +11,7 @@ import { UserRole, UserStatus, VerificationStatus } from './user.constant';
 import QueryBuilder from '../../builder/QueryBuilder';
 import { Types } from 'mongoose';
 import { sendNotifications } from '../../../helpers/notificationHelper';
+import { NotificationType } from '../notification/notification.constant';
 
 const createUserToDB = async (payload: Partial<IUser>) => {
   // check if user is exist
@@ -178,12 +179,12 @@ const reviewKycToDB = async (
   // send notification to user
   if (result) {
     sendNotifications({
-      type: 'kyc_review',
+      type: NotificationType.KycReview,
       title: 'Verification Review',
       message: `Your verification request has been ${payload.status}`,
       receiver: result._id,
       referenceId: result._id.toString(),
-    }).catch((error) => {
+    }).catch(error => {
       console.error('KYC Review Notification Failed:', error);
     });
   }
