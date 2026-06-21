@@ -34,7 +34,13 @@ const fileUploadHandler = (): RequestHandler => {
           uploadDir = path.join(baseUploadDir, 'doc');
           break;
         default:
-          throw new ApiError(StatusCodes.BAD_REQUEST, 'File is not supported');
+          return cb(
+            new ApiError(
+              StatusCodes.BAD_REQUEST,
+              'File field is not supported',
+            ),
+            '',
+          );
       }
       createDir(uploadDir);
       cb(null, uploadDir);
@@ -96,7 +102,7 @@ const fileUploadHandler = (): RequestHandler => {
     storage: storage,
     fileFilter: fileFilter as any,
   }).fields([
-    { name: 'image', maxCount: 3 },
+    { name: 'image', maxCount: 5 },
     { name: 'media', maxCount: 3 },
     { name: 'doc', maxCount: 3 },
   ]);
@@ -105,7 +111,42 @@ const fileUploadHandler = (): RequestHandler => {
   return (req: Request, res: Response, next: NextFunction) => {
     upload(req as any, res as any, err => {
       if (err) {
-        return next(err instanceof ApiError ? err : new ApiError(StatusCodes.BAD_REQUEST, 'File upload error'));
+        // 1. If it's a native Multer Error (e.g. limit exceeded, unexpected field)
+        if (err instanceof multer.MulterError) {
+          if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+            return next(
+              new ApiError(
+                StatusCodes.BAD_REQUEST,
+                `File limit exceeded or invalid field name for '${err.field}'.`,
+              ),
+            );
+          }
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return next(
+              new ApiError(StatusCodes.BAD_REQUEST, `File size is too large.`),
+            );
+          }
+          // Fallback for other Multer errors (LIMIT_FILE_COUNT, LIMIT_FIELD_KEY, etc.)
+          return next(
+            new ApiError(
+              StatusCodes.BAD_REQUEST,
+              `Upload error (${err.code}): ${err.message}`,
+            ),
+          );
+        }
+
+        // 2. If it's your custom ApiError thrown from fileFilter or destination
+        if (err instanceof ApiError) {
+          return next(err);
+        }
+
+        // 3. Any other unexpected generic error
+        return next(
+          new ApiError(
+            StatusCodes.BAD_REQUEST,
+            err.message || 'File upload failed',
+          ),
+        );
       }
 
       // --- AUTO-PARSING LOGIC FOR ZOD VALIDATION ---
