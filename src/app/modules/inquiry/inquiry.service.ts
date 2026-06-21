@@ -5,6 +5,10 @@ import { IInquiry } from './inquiry.interface';
 import { Inquiry } from './inquiry.model';
 import { InquiryStatus } from './inquiry.constants';
 import QueryBuilder from '../../builder/QueryBuilder';
+import { sendNotifications } from '../../../helpers/notificationHelper';
+import { NotificationType } from '../notification/notification.constant';
+import { User } from '../user/user.model';
+import { UserRole, UserStatus } from '../user/user.constant';
 
 // -------------- create inquiry --------------
 const createInquiry = async (payload: IInquiry): Promise<IInquiry> => {
@@ -32,6 +36,31 @@ const createInquiry = async (payload: IInquiry): Promise<IInquiry> => {
 
   // create inquiry
   const result = await Inquiry.create(payload);
+
+  // send notification to the admin
+  const admins = await User.find({
+    role: UserRole.Admin,
+    status: UserStatus.Active,
+    isDeleted: false,
+  });
+  // Fire all admin notifications concurrently in the background
+  Promise.all(
+    admins.map(admin =>
+      sendNotifications({
+        type: NotificationType.Inquiry,
+        receiver: admin._id,
+        title: 'New Property Inquiry',
+        message: `You have a new property inquiry!`,
+        referenceId: property._id.toString(),
+      }),
+    ),
+  ).catch(error => {
+    console.error(
+      'Failed to send notification on create inquiry to admins:',
+      error,
+    );
+  });
+
   return result;
 };
 

@@ -1,7 +1,7 @@
 export enum NotificationType {
   General = 'general',
   Ride = 'ride',
-  Listing = 'listing',
+  Inquiry = 'inquiry',
   Reservation = 'reservation',
   Consultation = 'consultation',
   KycReview = 'kyc_review',
