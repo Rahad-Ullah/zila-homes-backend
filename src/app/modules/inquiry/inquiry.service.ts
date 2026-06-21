@@ -51,7 +51,7 @@ const createInquiry = async (payload: IInquiry): Promise<IInquiry> => {
         receiver: admin._id,
         title: 'New Property Inquiry',
         message: `You have a new property inquiry!`,
-        referenceId: property._id.toString(),
+        referenceId: result._id.toString(),
       }),
     ),
   ).catch(error => {
