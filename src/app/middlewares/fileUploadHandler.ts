@@ -151,35 +151,81 @@ const fileUploadHandler = (): RequestHandler => {
 
       // --- AUTO-PARSING LOGIC FOR ZOD VALIDATION ---
       if (req.body) {
-        for (const key in req.body) {
-          const value = req.body[key];
+        // Keys that should absolutely remain strings even if they look like numbers
+        const stringBlacklist = [
+          'postalcode',
+          'zipcode',
+          'phone',
+          'phonenumber',
+          'id',
+        ];
 
-          if (typeof value === 'string') {
-            const trimmedValue = value.trim();
+        const deepParse = (obj: any, currentKey: string = ''): any => {
+          if (typeof obj === 'string') {
+            const trimmedValue = obj.trim();
+            const lowerKey = currentKey.toLowerCase();
 
             try {
-              // 1. Parse JSON Strings (Arrays like '["NY", "LA"]' or Objects like '{"city": "Dhaka"}')
+              // 1. Parse JSON Strings (Arrays or Objects)
               if (
                 (trimmedValue.startsWith('[') && trimmedValue.endsWith(']')) ||
                 (trimmedValue.startsWith('{') && trimmedValue.endsWith('}'))
               ) {
-                req.body[key] = JSON.parse(trimmedValue);
+                return deepParse(JSON.parse(trimmedValue), currentKey);
               }
-              // 2. Parse Booleans ('true' / 'false')
-              else if (trimmedValue === 'true' || trimmedValue === 'false') {
-                req.body[key] = JSON.parse(trimmedValue);
+
+              // 2. Parse Booleans
+              if (trimmedValue === 'true' || trimmedValue === 'false') {
+                return JSON.parse(trimmedValue);
               }
-              // 3. Parse Numbers ('25', '10.5')
-              // Ensuring it's a valid number and not an empty string or spaces
-              else if (trimmedValue !== '' && !isNaN(Number(trimmedValue))) {
-                req.body[key] = Number(trimmedValue);
+
+              // 3. Parse Numbers (with safeguards)
+              if (trimmedValue !== '' && !isNaN(Number(trimmedValue))) {
+                // Safeguard A: Is this key explicitly blacklisted to stay a string?
+                if (
+                  stringBlacklist.some(blacklisted =>
+                    lowerKey.includes(blacklisted),
+                  )
+                ) {
+                  return trimmedValue;
+                }
+
+                // Safeguard B: Does it have leading zeros? (e.g., "00123" -> should stay a string)
+                if (
+                  trimmedValue.length > 1 &&
+                  trimmedValue.startsWith('0') &&
+                  !trimmedValue.startsWith('0.')
+                ) {
+                  return trimmedValue;
+                }
+
+                return Number(trimmedValue);
               }
             } catch (e) {
-              // Fail silently: If parsing breaks, we keep it as a raw string 
-              // and let Zod handle the validation failure downstream.
+              return obj;
             }
+            return trimmedValue;
           }
-        }
+
+          // If it's an array, map over elements (keep passing the parent key name context down)
+          if (Array.isArray(obj)) {
+            return obj.map(item => deepParse(item, currentKey));
+          }
+
+          // If it's an object, iterate through keys
+          if (obj !== null && typeof obj === 'object') {
+            for (const key in obj) {
+              if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                obj[key] = deepParse(obj[key], key); // 👈 Passing the actual key name here
+              }
+            }
+            return obj;
+          }
+
+          return obj;
+        };
+
+        req.body = deepParse(req.body);
       }
 
       next();
