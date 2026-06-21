@@ -35,7 +35,7 @@ const createRide = async (payload: IRide): Promise<IRide> => {
   Promise.all(
     admins.map(admin =>
       sendNotifications({
-        type: NotificationType.Inquiry,
+        type: NotificationType.Ride,
         receiver: admin._id,
         title: 'New Transportation Request',
         message: `You have a new transportation request!`,

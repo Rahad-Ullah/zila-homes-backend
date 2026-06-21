@@ -1,4 +1,8 @@
+import { sendNotifications } from '../../../helpers/notificationHelper';
 import QueryBuilder from '../../builder/QueryBuilder';
+import { NotificationType } from '../notification/notification.constant';
+import { UserRole, UserStatus } from '../user/user.constant';
+import { User } from '../user/user.model';
 import { ConsultationStatus } from './consultation.constants';
 import { IConsultation } from './consultation.interface';
 import { Consultation } from './consultation.model';
@@ -19,6 +23,31 @@ const createConsultation = async (payload: IConsultation): Promise<IConsultation
   }
 
   const result = await Consultation.create(payload);
+
+  // send notification to the admin
+    const admins = await User.find({
+      role: UserRole.Admin,
+      status: UserStatus.Active,
+      isDeleted: false,
+    });
+    // Fire all admin notifications concurrently in the background
+    Promise.all(
+      admins.map(admin =>
+        sendNotifications({
+          type: NotificationType.Consultation,
+          receiver: admin._id,
+          title: 'New Consultation Request',
+          message: `You have a new consultation request from ${payload.customer.name}!`,
+          referenceId: result._id.toString(),
+        }),
+      ),
+    ).catch(error => {
+      console.error(
+        'Failed to send notification on create consultation to admins:',
+        error,
+      );
+    });
+  
   return result;
 };
 
