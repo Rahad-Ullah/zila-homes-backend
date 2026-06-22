@@ -14,7 +14,7 @@ import { Types } from 'mongoose';
 
 // -------------- create reservation --------------
 const createReservation = async (
-  payload: IReservation & { country: string },
+  payload: IReservation & { currency: string },
 ) => {
   // check if accommodation is available
   const property = await Property.findOne({
@@ -61,7 +61,7 @@ const createReservation = async (
   });
 
   // handle ethiopian payment
-  if (payload.country === 'Ethiopia') {
+  if (payload.currency.toUpperCase() === 'ETB') {
     // handle ethiopian payment
   }
 
@@ -86,7 +86,10 @@ const createReservation = async (
     message: `You have a new reservation for ${property.title}!`,
     referenceId: property._id.toString(),
   }).catch(error => {
-    console.error('Failed to send background notification on reservation:', error);
+    console.error(
+      'Failed to send background notification on reservation:',
+      error,
+    );
   });
 
   return payment;

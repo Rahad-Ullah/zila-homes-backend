@@ -20,10 +20,10 @@ const createReservationValidation = z.object({
       pets: z.number().nonnegative('Number of pets must be non-negative'),
     }),
     roomClass: z.nativeEnum(RoomClass),
-    country: z
+    currency: z
       .string()
-      .min(2, "Country name must be at least 2 characters")
-      .max(56, "Country name is too long")
+      .nonempty('Currency is required')
+      .length(3, 'Currency must be 3 characters long')
       .trim(),
   })
     .strict()
