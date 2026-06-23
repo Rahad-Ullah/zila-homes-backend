@@ -268,10 +268,12 @@ const getTopCities = async () => {
       $limit: 50,
     },
   ]);
-  return result.map((item: any) => ({
-    city: item._id,
-    count: item.count,
-  }));
+  return result
+    .filter((item: any) => item._id)
+    .map((item: any) => ({
+      city: item._id,
+      count: item.count,
+    }));
 };
 
 
