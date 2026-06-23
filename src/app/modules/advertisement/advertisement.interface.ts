@@ -4,9 +4,10 @@ import { AdvertisementStatus } from './advertisement.constants';
 export interface IAdvertisement {
   _id: ObjectId;
   title: string;
+  description: string;
   image: string;
   link?: string;
-  status: AdvertisementStatus
+  status: AdvertisementStatus;
   createdAt: Date;
   updatedAt: Date;
 }
