@@ -43,10 +43,12 @@ const updateUserZodSchema = z.object({
           country: z.string().optional(),
         })
         .optional(),
-      location: z.object({
-        type: z.string().optional(),
-        coordinates: z.array(z.number()).optional(),
-      }),
+      location: z
+        .object({
+          type: z.string().optional(),
+          coordinates: z.array(z.number()).optional(),
+        })
+        .optional(),
     })
     .strict(),
 });
