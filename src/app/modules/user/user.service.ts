@@ -117,7 +117,7 @@ const updateKycToDB = async (
 
   // check if user already verified
   if (existingUser?.verification?.status === VerificationStatus.Verified) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "You are already verified!");
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'You are already verified!');
   }
 
   const result = await User.findByIdAndUpdate(
@@ -144,6 +144,32 @@ const updateKycToDB = async (
     existingUser.verification.documents.forEach((doc: string) => {
       unlinkFile(doc);
     });
+  }
+
+  // send notification to admin
+  const admins = await User.find({
+    role: { $in: [UserRole.Admin, UserRole.SuperAdmin] },
+    status: UserStatus.Active,
+    isDeleted: false,
+  });
+  if (result && admins.length > 0) {
+    const notificationPromises = admins.map(admin =>
+      sendNotifications({
+        type: NotificationType.KycRequest,
+        title: 'Verification Request',
+        message: `Verification request from ${existingUser.firstName} ${existingUser.lastName}.`,
+        receiver: admin._id,
+        referenceId: result._id.toString(),
+      }).catch(error => {
+        console.error(
+          `KYC Review Notification Failed for admin ${admin._id}:`,
+          error,
+        );
+      }),
+    );
+
+    // Execute all notifications in parallel without blocking the main thread
+    Promise.all(notificationPromises);
   }
 
   return result;

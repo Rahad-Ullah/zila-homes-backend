@@ -4,5 +4,6 @@ export enum NotificationType {
   Inquiry = 'inquiry',
   Reservation = 'reservation',
   Consultation = 'consultation',
+  KycRequest = 'kyc_request',
   KycReview = 'kyc_review',
 }

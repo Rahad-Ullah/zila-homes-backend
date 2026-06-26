@@ -18,6 +18,7 @@ const sendEmail = async (values: ISendEmail) => {
     const info = await transporter.sendMail({
       from: `${config.server_name} <${config.email.from}>`,
       to: values.to,
+      replyTo: config.email.replyTo,
       subject: values.subject,
       html: values.html,
     });
