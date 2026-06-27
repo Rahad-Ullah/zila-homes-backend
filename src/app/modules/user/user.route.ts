@@ -49,7 +49,7 @@ router.patch(
 
 // get my kyc
 router.get(
-  '/kyc',
+  '/kyc/me',
   auth(UserRole.Customer, UserRole.Driver, UserRole.Host, UserRole.Owner),
   UserController.getMyKyc,
 );
