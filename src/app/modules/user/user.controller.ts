@@ -108,6 +108,18 @@ const updateStatus = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get my kyc
+const getMyKyc = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserService.getKycByUserIdFromDB(req.user.id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'KYC data retrieved successfully',
+    data: result,
+  });
+});
+
 // get all users
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
   const result = await UserService.getAllUsersFromDB(req.query);
@@ -125,6 +137,7 @@ export const UserController = {
   createUser,
   getUserProfile,
   getSingleUser,
+  getMyKyc,
   updateProfile,
   updateKyc,
   reviewKyc,

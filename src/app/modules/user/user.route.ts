@@ -47,6 +47,13 @@ router.patch(
   UserController.updateStatus,
 );
 
+// get my kyc
+router.get(
+  '/kyc',
+  auth(UserRole.Customer, UserRole.Driver, UserRole.Host, UserRole.Owner),
+  UserController.getMyKyc,
+);
+
 // get profile
 router.get('/profile', auth(), UserController.getUserProfile);
 
