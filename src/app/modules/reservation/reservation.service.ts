@@ -60,23 +60,28 @@ const createReservation = async (
     },
   });
 
-  // handle ethiopian payment
+  let payment;
   if (payload.currency.toUpperCase() === 'ETB') {
     // handle ethiopian payment
-  }
-
-  // handle international payment
-  const payment = await TransactionServices.createStripeCheckoutSession(
-    customer,
-    {
+    payment = await TransactionServices.createChapaCheckoutSession(customer, {
       amount: total,
       currency: 'USD',
       reference: {
         type: TransactionReferenceType.Reservation,
         id: reservation._id.toString(),
       },
-    },
-  );
+    });
+  } else {
+    // handle international payment
+    payment = await TransactionServices.createStripeCheckoutSession(customer, {
+      amount: total,
+      currency: 'USD',
+      reference: {
+        type: TransactionReferenceType.Reservation,
+        id: reservation._id.toString(),
+      },
+    });
+  }
 
   // send notification to the host
   sendNotifications({

@@ -10,6 +10,7 @@ import { stripe } from '../../../config/stripe';
 import { IUser } from '../user/user.interface';
 import { Property } from '../property/property.model';
 import { Reservation } from '../reservation/reservation.model';
+import { chapa } from '../../../config/chapa';
 
 // ------------- create Stripe checkout session ----------------
 const createStripeCheckoutSession = async (
@@ -55,6 +56,53 @@ const createStripeCheckoutSession = async (
     checkoutUrl: session.url,
     sessionId: session.id,
   };
+};
+
+// ------------- create Chapa checkout session ----------------
+const createChapaCheckoutSession = async (
+  user: IUser, 
+  payload: { amount: number; currency: string; reference: { type: TransactionReferenceType; id: string } }
+) => {
+  const { amount, currency, reference } = payload;
+
+  if (!amount || !currency || !reference) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Amount, currency, and reference are required');
+  }
+
+  // Use the SDK's utility method to generate a clean, secure tx_ref string
+  const txRef = chapa.genTxRef({ prefix: `ZILA_${reference.type.toUpperCase()}` });
+
+  try {
+    // The SDK takes care of the internal endpoint URL structuring
+    const response = await chapa.initialize({
+      first_name: user.firstName || 'Zila',
+      last_name: user.lastName || 'Customer',
+      email: user.email,
+      phone_number: user.phone || '0912345678',
+      amount: amount.toString(),
+      currency: currency.toUpperCase(),
+      tx_ref: txRef,
+      callback_url: `${config.backend_url}/webhooks/chapa`,
+      return_url: `${config.frontend_url}/payment/success?tx_ref=${txRef}`,
+      customization: {
+        title: 'ZilaHomes',
+        description: `Payment for ${reference.type}`,
+      },
+      meta: {
+        userId: user._id.toString(),
+        referenceType: reference.type,
+        referenceId: reference.id,
+      },
+    } as any);
+
+    return {
+      checkoutUrl: response.data?.checkout_url,
+      sessionId: txRef,
+    };
+  } catch (error: any) {
+    console.error("Chapa API Error:", error);
+    throw error;
+  }
 };
 
 // ------------- update transaction status ----------------
@@ -153,6 +201,7 @@ const getAllTransactions = async (query: Record<string, unknown>) => {
 
 export const TransactionServices = {
   createStripeCheckoutSession,
+  createChapaCheckoutSession,
   updateTransactionStatus,
   getSingleTransaction,
   getTransactionsByUserId,

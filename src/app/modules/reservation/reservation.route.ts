@@ -17,10 +17,10 @@ router.post(
 
 // update reservation
 router.patch(
-    '/:id',
-    auth(UserRole.Host, UserRole.Admin, UserRole.SuperAdmin),
-    validateRequest(ReservationValidations.updateReservationValidation),
-    ReservationController.updateReservation,
+  '/:id',
+  auth(UserRole.Customer, UserRole.Host, UserRole.Admin, UserRole.SuperAdmin),
+  validateRequest(ReservationValidations.updateReservationValidation),
+  ReservationController.updateReservation,
 );
 
 // delete reservation

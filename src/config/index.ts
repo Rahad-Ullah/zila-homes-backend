@@ -10,6 +10,7 @@ export default {
   port: process.env.PORT,
   port_dev: process.env.PORT_DEV,
   frontend_url: process.env.FRONTEND_URL,
+  backend_url: process.env.BACKEND_URL,
   logo_url: process.env.LOGO_URL,
   bcrypt_salt_rounds: process.env.BCRYPT_SALT_ROUNDS,
   jwt: {
@@ -35,5 +36,10 @@ export default {
     public_key: process.env.STRIPE_PUBLIC_KEY,
     secret_key: process.env.STRIPE_SECRET_KEY,
     webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
+  },
+  chapa: {
+    secret_key: process.env.CHAPA_SECRET_KEY,
+    public_key: process.env.CHAPA_PUBLIC_KEY,
+    webhook_secret: process.env.CHAPA_WEBHOOK_SECRET,
   },
 };
