@@ -95,21 +95,18 @@ const createReservation = async (
 
   // create transaction
   if (paymentSession.checkoutUrl) {
-    await Transaction.create(
-      {
-        user: customer._id,
-        reference: {
-          type: TransactionReferenceType.Reservation,
-          id: reservation._id,
-        },
-        type: TransactionType.Payment,
-        gateway: paymentSession.gateway,
-        gatewayReferenceId: paymentSession.sessionId,
-        amount: total,
-        netAmount: total,
+    await Transaction.create({
+      user: customer._id,
+      reference: {
+        type: TransactionReferenceType.Reservation,
+        id: reservation._id,
       },
-      { new: true },
-    );
+      type: TransactionType.Payment,
+      gateway: paymentSession.gateway,
+      gatewayReferenceId: paymentSession.sessionId,
+      amount: total,
+      netAmount: total,
+    });
   }
 
   // send notification to the host
@@ -127,7 +124,7 @@ const createReservation = async (
   });
 
   return paymentSession;
-};
+};;
 
 // -------------- update reservation --------------
 const updateReservation = async (
