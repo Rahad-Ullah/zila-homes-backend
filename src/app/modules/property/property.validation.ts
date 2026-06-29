@@ -198,6 +198,24 @@ const updateListingSchema = z.object({
     .strict(),
 });
 
+// update status, verification status
+const updateStatusSchema = z.object({
+  params: z
+    .object({
+      id: objectId('Property ID'),
+    })
+    .strict(),
+  body: z.object({
+    status: z.nativeEnum(PropertyStatus).optional(),
+    isVerified: z
+      .boolean()
+      .optional(),
+    isFeatured: z
+      .boolean()
+      .optional(),
+  }),
+});
+
 // delete property
 const deletePropertySchema = z.object({
   params: z
@@ -221,6 +239,7 @@ export const PropertyValidations = {
   updateAccommodationSchema,
   createListingSchema,
   updateListingSchema,
+  updateStatusSchema,
   deletePropertySchema,
   getPropertyByIdSchema,
 };

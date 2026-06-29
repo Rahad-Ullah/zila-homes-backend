@@ -44,6 +44,14 @@ router.patch(
     PropertyController.updateListing,
 );
 
+// update status
+router.patch(
+    '/:id',
+    auth(UserRole.Admin, UserRole.SuperAdmin),
+    validateRequest(PropertyValidations.updateStatusSchema),
+    PropertyController.updateStatus,
+);
+
 // delete property
 router.delete(
     '/:id',

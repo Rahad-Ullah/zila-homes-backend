@@ -8,6 +8,7 @@ import mongoose from 'mongoose';
 import { Listing } from '../listing/listing.model';
 import QueryBuilder from '../../builder/QueryBuilder';
 import { Wishlist } from '../wishlist/wishlist.model';
+import { PropertyStatus } from './property.constants';
 
 // ------------- create accommodation -------------
 const createAccommodation = async (payload: IProperty): Promise<IProperty> => {
@@ -49,6 +50,11 @@ const createListing = async (payload: IProperty & IListing) => {
 
     // attach property id to listing
     payload.property = property[0]._id;
+
+    // set property verification status
+    payload.isVerified = true;
+    payload.verifiedAt = new Date();
+    payload.status = PropertyStatus.Active;
 
     // create listing
     const listing = await Listing.create([payload], { session });
@@ -105,6 +111,20 @@ const updateListing = async (propertyId: string, payload: IProperty & IListing) 
   } finally {
     session.endSession();
   }
+};
+
+// ------------- update status --------------
+const updateStatus = async (propertyId: string, payload: Partial<IProperty>) => {
+  if(payload.isVerified){
+    payload.verifiedAt = new Date();
+  } else {
+    payload.verifiedAt = undefined;
+  }
+  const property = await Property.findByIdAndUpdate(propertyId, payload, { new: true });
+  if (!property) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Property not found');
+  }
+  return property;
 };
 
 // ------------- delete property by id --------------
@@ -282,6 +302,7 @@ export const PropertyServices = {
   updateAccommodation,
   createListing,
   updateListing,
+  updateStatus,
   deleteProperty,
   deleteMyProperty,
   getPropertyById,
