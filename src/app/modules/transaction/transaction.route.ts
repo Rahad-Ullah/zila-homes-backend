@@ -25,9 +25,16 @@ router.get(
 
 // get my transactions
 router.get(
-    '/my-transactions',
-    auth(),
-    TransactionController.getMyTransactions,
+  '/my-transactions',
+  auth(UserRole.Customer),
+  TransactionController.getMyTransactions,
+);
+
+// get host transactions
+router.get(
+  '/host-transactions',
+  auth(UserRole.Host),
+  TransactionController.getHostTransactions,
 );
 
 // get all transactions

@@ -164,6 +164,30 @@ const getTransactionsByUserId = async (userId: string, query: Record<string, unk
   return { data, pagination };
 };
 
+// ------------- get transactions by host id ----------------
+const getTransactionsByHostId = async (hostId: string, query: Record<string, unknown>) => {
+  const properties = await Property.find({
+      provider: query.host,
+      isDeleted: false,
+    }).select('_id');
+    const reservations = await Reservation.find({
+      property: { $in: properties.map(property => property._id) },
+    }).select('_id');
+    const filter = { 'reference.id': { $in: reservations.map(reservation => reservation._id) } }
+  const transactionQuery = new QueryBuilder(Transaction.find(filter), query)
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const [data, pagination] = await Promise.all([
+    transactionQuery.modelQuery.populate('user').populate('reference.id'),
+    transactionQuery.getPaginationInfo(),
+  ]);
+
+  return { data, pagination };
+};
+
 // ------------- get all transactions ----------------
 const getAllTransactions = async (query: Record<string, unknown>) => {
   const filter = {} as any;
@@ -211,5 +235,6 @@ export const TransactionServices = {
   updateTransactionStatus,
   getSingleTransaction,
   getTransactionsByUserId,
+  getTransactionsByHostId,
   getAllTransactions,
 };

@@ -51,6 +51,22 @@ const getMyTransactions = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get host transactions
+const getHostTransactions = catchAsync(async (req: Request, res: Response) => {
+  const result = await TransactionServices.getTransactionsByHostId(
+    req.user.id as string,
+    req.query,
+  );
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Transactions fetched successfully',
+    data: result.data,
+    pagination: result.pagination,
+  });
+});
+
 // get all transactions
 const getAllTransactions = catchAsync(async (req: Request, res: Response) => {
   const result = await TransactionServices.getAllTransactions(req.query);
@@ -68,5 +84,6 @@ export const TransactionController = {
   updateTransactionStatus,
   getSingleTransaction,
   getMyTransactions,
+  getHostTransactions,
   getAllTransactions,
 };
