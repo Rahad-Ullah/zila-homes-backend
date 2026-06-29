@@ -63,9 +63,6 @@ const createListing = catchAsync(async (req: Request, res: Response) => {
   if (!Array.isArray(images) || images.length === 0) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Minimum 1 image is required');
   }
-  if (!videoUrl) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Video is required');
-  }
 
   const payload = {
     provider: req.user.id,
