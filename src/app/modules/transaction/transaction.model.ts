@@ -43,7 +43,6 @@ const transactionSchema = new Schema<ITransaction, TransactionModel>({
   },
   paymentMethod: {
     type: String,
-    required: true,
   },
   amount: {
     type: Number,
@@ -51,28 +50,24 @@ const transactionSchema = new Schema<ITransaction, TransactionModel>({
   },
   gatewayFee: {
     type: Number,
-    required: true,
   },
   platformFeePercentage: {
     type: Number,
-    required: true,
   },
   platformFee: {
     type: Number,
-    required: true,
   },
   netAmount: {
     type: Number,
-    required: true,
   },
   currency: {
     type: String,
-    required: true,
+    default: 'USD',
   },
   status: {
     type: String,
-    enum: TransactionStatus,
-    required: true,
+    enum: Object.values(TransactionStatus),
+    default: TransactionStatus.Pending,
   },
   isPaid: {
     type: Boolean,

@@ -7,10 +7,14 @@ import QueryBuilder from '../../builder/QueryBuilder';
 import { PropertyCategory } from '../property/property.constants';
 import { User } from '../user/user.model';
 import { TransactionServices } from '../transaction/transaction.service';
-import { TransactionReferenceType } from '../transaction/transaction.constants';
+import {
+  TransactionReferenceType,
+  TransactionType,
+} from '../transaction/transaction.constants';
 import { sendNotifications } from '../../../helpers/notificationHelper';
 import { NotificationType } from '../notification/notification.constant';
 import { Types } from 'mongoose';
+import { Transaction } from '../transaction/transaction.model';
 
 // -------------- create reservation --------------
 const createReservation = async (
@@ -60,27 +64,52 @@ const createReservation = async (
     },
   });
 
-  let payment;
+  let paymentSession;
   if (payload.currency.toUpperCase() === 'ETB') {
     // handle ethiopian payment
-    payment = await TransactionServices.createChapaCheckoutSession(customer, {
-      amount: total,
-      currency: 'USD',
-      reference: {
-        type: TransactionReferenceType.Reservation,
-        id: reservation._id.toString(),
+    paymentSession = await TransactionServices.createChapaCheckoutSession(
+      customer,
+      {
+        amount: total,
+        currency: 'USD',
+        reference: {
+          type: TransactionReferenceType.Reservation,
+          id: reservation._id.toString(),
+        },
       },
-    });
+    );
   } else {
     // handle international payment
-    payment = await TransactionServices.createStripeCheckoutSession(customer, {
-      amount: total,
-      currency: 'USD',
-      reference: {
-        type: TransactionReferenceType.Reservation,
-        id: reservation._id.toString(),
+    paymentSession = await TransactionServices.createStripeCheckoutSession(
+      customer,
+      {
+        amount: total,
+        currency: 'USD',
+        reference: {
+          type: TransactionReferenceType.Reservation,
+          id: reservation._id.toString(),
+        },
       },
-    });
+    );
+  }
+
+  // create transaction
+  if (paymentSession.checkoutUrl) {
+    await Transaction.create(
+      {
+        user: customer._id,
+        reference: {
+          type: TransactionReferenceType.Reservation,
+          id: reservation._id,
+        },
+        type: TransactionType.Payment,
+        gateway: paymentSession.gateway,
+        gatewayReferenceId: paymentSession.sessionId,
+        amount: total,
+        netAmount: total,
+      },
+      { new: true },
+    );
   }
 
   // send notification to the host
@@ -97,7 +126,7 @@ const createReservation = async (
     );
   });
 
-  return payment;
+  return paymentSession;
 };
 
 // -------------- update reservation --------------

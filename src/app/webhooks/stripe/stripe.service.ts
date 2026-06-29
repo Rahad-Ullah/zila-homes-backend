@@ -35,11 +35,11 @@ export const onCheckoutSessionCompleted = async (event: Stripe.Event) => {
   const isPaid = session.payment_status === 'paid';
 
   try {
-    // 4. Create the formal Transaction document inside your MongoDB ledger
-    const newTransaction = await Transaction.findOneAndUpdate(
+    // 4. update the formal Transaction document inside your MongoDB ledger
+    const transaction = await Transaction.findOneAndUpdate(
       {
         gateway: TransactionGateway.Stripe,
-        gatewayReferenceId: paymentIntentId,
+        gatewayReferenceId: session.id,
       },
       {
         user: userId,
@@ -64,14 +64,14 @@ export const onCheckoutSessionCompleted = async (event: Stripe.Event) => {
       { upsert: true, new: true }
     );
 
-    console.log(`[Stripe Webhook Success] Transaction logged successfully: ${newTransaction._id}`);
+    console.log(`[Stripe Webhook Success] Transaction logged successfully: ${transaction._id}`);
 
     // 5. Trigger Fulfiment Logic Below
     switch (referenceType) {
       case TransactionReferenceType.Reservation:
         await Reservation.findByIdAndUpdate(referenceId, {
           $set: {
-            transaction: newTransaction._id,
+            transaction: transaction._id,
             'pricing.isPaid': isPaid,
           }
         });

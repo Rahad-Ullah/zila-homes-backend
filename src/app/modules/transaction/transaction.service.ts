@@ -2,7 +2,11 @@ import { Transaction } from './transaction.model';
 import { ITransaction } from './transaction.interface';
 import ApiError from '../../../errors/ApiError';
 import { StatusCodes } from 'http-status-codes';
-import { TransactionStatus, TransactionReferenceType } from './transaction.constants';
+import {
+  TransactionStatus,
+  TransactionReferenceType,
+  TransactionGateway,
+} from './transaction.constants';
 import config from '../../../config';
 import QueryBuilder from '../../builder/QueryBuilder';
 import { User } from '../user/user.model';
@@ -55,6 +59,7 @@ const createStripeCheckoutSession = async (
   return {
     checkoutUrl: session.url,
     sessionId: session.id,
+    gateway: TransactionGateway.Stripe,
   };
 };
 
@@ -98,6 +103,7 @@ const createChapaCheckoutSession = async (
     return {
       checkoutUrl: response.data?.checkout_url,
       sessionId: txRef,
+      gateway: TransactionGateway.Chapa,
     };
   } catch (error: any) {
     console.error("Chapa API Error:", error);
