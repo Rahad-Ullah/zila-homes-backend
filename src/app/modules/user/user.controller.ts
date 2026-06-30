@@ -108,6 +108,18 @@ const updateStatus = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// delete user
+const deleteSingleUser = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserService.deleteSingleUserFromDB(req.params.id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'User deleted successfully',
+    data: result,
+  });
+});
+
 // get my kyc
 const getMyKyc = catchAsync(async (req: Request, res: Response) => {
   const result = await UserService.getKycByUserIdFromDB(req.user.id);
@@ -142,5 +154,6 @@ export const UserController = {
   updateKyc,
   reviewKyc,
   updateStatus,
+  deleteSingleUser,
   getAllUsers,
 };

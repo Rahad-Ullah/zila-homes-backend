@@ -178,7 +178,11 @@ const updateKycToDB = async (
 // ------------ review kyc ------------
 const reviewKycToDB = async (
   userId: string,
-  payload: { status: VerificationStatus; reviewNotes?: string; reviewedBy: string },
+  payload: {
+    status: VerificationStatus;
+    reviewNotes?: string;
+    reviewedBy: string;
+  },
 ): Promise<Partial<IUser | null>> => {
   const existingUser = await User.findById(userId).select('+verification');
   if (!existingUser) {
@@ -235,6 +239,21 @@ const updateStatusToDB = async (
   return updateDoc;
 };
 
+// ------------ delete user ------------
+const deleteSingleUserFromDB = async (
+  userId: string,
+): Promise<Partial<IUser>> => {
+  const result = await User.findByIdAndUpdate(
+    userId,
+    { isDeleted: true },
+    { new: true },
+  );
+  if (!result) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+  return result;
+};
+
 // ------------ get kyc by user id ------------
 const getKycByUserIdFromDB = async (id: string): Promise<Partial<IUser>> => {
   const user = await User.findById(id).select('+verification');
@@ -242,12 +261,14 @@ const getKycByUserIdFromDB = async (id: string): Promise<Partial<IUser>> => {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
   return user;
-}
+};
 
 // ------------ get all users ------------
 const getAllUsersFromDB = async (query: Record<string, unknown>) => {
   const userQuery = new QueryBuilder(
-    User.find({ isDeleted: false, role: { $ne: UserRole.SuperAdmin } }).select('+verification'),
+    User.find({ isDeleted: false, role: { $ne: UserRole.SuperAdmin } }).select(
+      '+verification',
+    ),
     query,
   )
     .search(['firstName', 'lastName', 'email'])
@@ -273,5 +294,6 @@ export const UserService = {
   updateKycToDB,
   reviewKycToDB,
   updateStatusToDB,
+  deleteSingleUserFromDB,
   getAllUsersFromDB,
 };

@@ -79,9 +79,19 @@ const reviewKycZodSchema = z
     }).strict(),
   })
 
+// delete user
+const deleteUserZodSchema = z.object({
+  params: z
+    .object({
+      id: objectId('user id'),
+    })
+    .strict(),
+});
+
 export const UserValidation = {
   createUserZodSchema,
   updateUserZodSchema,
   updateStatusZodSchema,
   reviewKycZodSchema,
+  deleteUserZodSchema,
 };

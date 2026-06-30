@@ -47,6 +47,14 @@ router.patch(
   UserController.updateStatus,
 );
 
+// delete user
+router.delete(
+  '/:id',
+  auth(UserRole.Admin, UserRole.SuperAdmin),
+  validateRequest(UserValidation.deleteUserZodSchema),
+  UserController.deleteSingleUser,
+);
+
 // get my kyc
 router.get(
   '/kyc/me',
