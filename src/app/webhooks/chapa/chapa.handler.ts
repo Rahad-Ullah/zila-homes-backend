@@ -2,8 +2,7 @@ import { ChapaWebhookServices } from './chapa.service';
 import { ChapaEvent as ChapaEventModel } from '../../modules/chapaEvent/chapaEvent.model';
 
 export async function chapaEventHandler(eventPayload: any) {
-  const { event, tx_ref, reference, status } = eventPayload;
-  console.log('CHAPA EVENT: ', eventPayload);
+  const { event, tx_ref, reference } = eventPayload;
 
   // Idempotency guard: Using Chapa's transaction reference string as the unique key
   const uniqueEventId = reference || tx_ref;
@@ -23,12 +22,19 @@ export async function chapaEventHandler(eventPayload: any) {
   // Routing actions based on Chapa's 'event' field
   switch (event) {
     case 'charge.success':
-      // await ChapaWebhookServices.onChargeSuccess(eventPayload);
+      await ChapaWebhookServices.onChargeSuccess(eventPayload);
       break;
 
-    // Handle other statuses if sent via standard webhooks
     case 'charge.failed':
-      // await ChapaWebhookServices.onChargeFailed(eventPayload);
+      await ChapaWebhookServices.onChargeFailed(eventPayload);
+      break;
+    
+    case 'charge.cancelled':
+      await ChapaWebhookServices.onChargeFailed(eventPayload);
+      break;
+    
+    case 'charge.failed/cancelled':
+      await ChapaWebhookServices.onChargeFailed(eventPayload);
       break;
 
     default:

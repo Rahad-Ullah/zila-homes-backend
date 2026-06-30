@@ -36,7 +36,9 @@ const createReservation = async (
   }
 
   // check if the customer is valid
-  const customer = await User.findById(payload.customer).select('email');
+  const customer = await User.findById(payload.customer).select(
+    'firstName lastName phone email',
+  );
   if (!customer) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Customer not found');
   }

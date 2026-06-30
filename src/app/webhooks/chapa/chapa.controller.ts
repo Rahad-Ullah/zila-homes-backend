@@ -4,7 +4,7 @@ import { chapa } from '../../../config/chapa';
 
 export const chapaWebhookController = async (req: Request, res: Response) => {
   const signature = req.headers['x-chapa-signature'] as string;
-  const rawBody = JSON.stringify(req.body);
+  const rawBody = req.body;
 
   // Validate Chapa's Webhook Signature
   const isValid = chapa.verifyWebhook(rawBody, signature);
@@ -15,7 +15,7 @@ export const chapaWebhookController = async (req: Request, res: Response) => {
 
   try {
     // Pass the payload directly to the event handler
-    await chapaEventHandler(req.body);
+    await chapaEventHandler(JSON.parse(rawBody));
   } catch (err) {
     console.error('Chapa webhook processing failed:', err);
   }

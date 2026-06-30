@@ -6,6 +6,7 @@ import router from './routes';
 import { Morgan } from './shared/morgen';
 import config from './config';
 import { stripeWebhookController } from './app/webhooks/stripe/stripe.controller';
+import { chapaWebhookController } from './app/webhooks/chapa/chapa.controller';
 const app = express();
 
 // trust proxy to get client real ip
@@ -20,6 +21,13 @@ app.post(
   '/webhooks/stripe',
   express.raw({ type: 'application/json' }),
   stripeWebhookController,
+);
+
+//chapa webhook
+app.post(
+  '/webhooks/chapa',
+  express.text({ type: 'application/json' }),
+  chapaWebhookController,
 );
 
 //body parser

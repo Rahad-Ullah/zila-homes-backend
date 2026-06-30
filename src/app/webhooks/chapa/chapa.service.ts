@@ -1,4 +1,3 @@
-import { Stripe } from 'stripe/cjs/stripe.core';
 import { Transaction } from '../../modules/transaction/transaction.model';
 import {
   TransactionGateway,
@@ -7,46 +6,61 @@ import {
   TransactionType,
 } from '../../modules/transaction/transaction.constants';
 import { Reservation } from '../../modules/reservation/reservation.model';
-import { stripe } from '../../../config/stripe';
 import { Setting } from '../../modules/setting/setting.model';
 
 // ----------------- on checkout session completed -----------------
-export const onCheckoutSessionCompleted = async (event: Stripe.Event) => {
-  const session = event.data.object as Stripe.Checkout.Session;
+const onChargeSuccess = async (payload: any) => {
+  const {
+    amount,
+    charge,
+    currency,
+    reference,
+    tx_ref,
+    payment_method,
+    status,
+    meta,
+    created_at,
+  } = payload;
 
-  // 1. Extract custom metadata
-  const { userId, referenceType, referenceId } = session.metadata || {};
+  // 1. Extract custom metadata safely
+  // Chapa returns meta as an object or sometimes stringified based on setup, let's guard it
+  let parsedMeta = meta;
+  if (typeof meta === 'string') {
+    try {
+      parsedMeta = JSON.parse(meta);
+    } catch {
+      parsedMeta = null;
+    }
+  }
+
+  const { userId, referenceType, referenceId } = parsedMeta || {};
+
   if (!userId || !referenceType || !referenceId) {
     console.error(
-      `[Stripe Webhook Error] Missing crucial metadata for session: ${session.id}`,
+      `[Chapa Webhook Error] Missing crucial metadata for transaction reference: ${tx_ref}`,
     );
     return;
   }
 
-  // 2. Capture the Stripe Payment Intent ID (Crucial for processing future refunds)
-  const paymentIntentId = session.payment_intent as string;
-  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
-    expand: ['latest_charge.balance_transaction'],
-  });
-  const balanceTransaction = (paymentIntent.latest_charge as Stripe.Charge)
-    ?.balance_transaction as Stripe.BalanceTransaction;
+  // 2. Fetch platform pricing parameters
   const setting = await Setting.findOne().select('platformFeePercentage');
 
   // 3. Format financial data
-  const totalAmount = balanceTransaction.amount / 100;
-  const gatewayFee = balanceTransaction?.fee / 100 || 0;
+  // Chapa amounts are already parsed as clean decimal floats (e.g., "140.80"), NOT cents!
+  const totalAmount = parseFloat(amount);
+  const gatewayFee = parseFloat(charge) || 0; // Chapa's processor fee is returned explicitly inside 'charge'
   const platformFeePercentage = setting?.platformFeePercentage || 0;
   const platformFee = (totalAmount * platformFeePercentage) / 100;
   const netAmount = totalAmount - platformFee;
 
-  const isPaid = session.payment_status === 'paid';
+  const isPaid = status === 'success';
 
   try {
-    // 4. update the formal Transaction document inside your MongoDB ledger
+    // 4. Update the formal Transaction document inside your MongoDB ledger
     const transaction = await Transaction.findOneAndUpdate(
       {
-        gateway: TransactionGateway.Stripe,
-        gatewayReferenceId: session.id,
+        gateway: TransactionGateway.Chapa,
+        gatewayReferenceId: tx_ref, // Track via your generated transaction string
       },
       {
         user: userId,
@@ -55,27 +69,25 @@ export const onCheckoutSessionCompleted = async (event: Stripe.Event) => {
           id: referenceId,
         },
         type: TransactionType.Payment,
-        gateway: TransactionGateway.Stripe,
-        gatewayReferenceId: paymentIntentId,
-        paymentMethod: session.payment_method_types?.[0] || 'card',
+        paymentMethod: payment_method || 'chapa_digital',
         amount: totalAmount,
         gatewayFee: gatewayFee,
         platformFeePercentage: platformFeePercentage,
         platformFee: platformFee,
         netAmount: netAmount,
-        currency: session.currency?.toUpperCase() || 'USD',
+        currency: currency?.toUpperCase() || 'USD',
         status: isPaid ? TransactionStatus.Completed : TransactionStatus.Failed,
         isPaid: isPaid,
-        paidAt: isPaid ? new Date() : undefined,
+        paidAt: isPaid ? new Date(created_at) : undefined,
       },
       { upsert: true, new: true },
     );
 
     console.log(
-      `[Stripe Webhook Success] Transaction logged successfully: ${transaction._id}`,
+      `[Chapa Webhook Success] Transaction logged successfully into Ledger: ${transaction._id}`,
     );
 
-    // 5. Trigger Fulfiment Logic Below
+    // 5. Trigger Fulfillment Logic matching your Stripe pattern
     switch (referenceType) {
       case TransactionReferenceType.Reservation:
         await Reservation.findByIdAndUpdate(referenceId, {
@@ -85,13 +97,14 @@ export const onCheckoutSessionCompleted = async (event: Stripe.Event) => {
           },
         });
         break;
-      // add other reference types here..
+
+      // Add other ZilaHomes business reference paths here...
       default:
         break;
     }
   } catch (error: any) {
     console.error(
-      `[Database Error] Failed to log transaction for session ${session.id}:`,
+      `[Database Error] Failed to log Chapa ledger transaction for reference ${tx_ref}:`,
       error.message,
     );
     throw error;
@@ -99,36 +112,59 @@ export const onCheckoutSessionCompleted = async (event: Stripe.Event) => {
 };
 
 // ----------------- on async payment failed -----------------
-export const onAsyncPaymentFailed = async (event: Stripe.Event) => {
-  const session = event.data.object as Stripe.Checkout.Session;
-  const paymentIntentId = session.payment_intent as string;
-  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
-    expand: ['latest_charge.balance_transaction'],
-  });
-  const balanceTransaction = (paymentIntent.latest_charge as Stripe.Charge)
-    ?.balance_transaction as Stripe.BalanceTransaction;
-  const setting = await Setting.findOne().select('platformFeePercentage');
-  const totalAmount = balanceTransaction.amount / 100;
-  const gatewayFee = balanceTransaction?.fee / 100 || 0;
-  const platformFeePercentage = setting?.platformFeePercentage || 0;
-  const platformFee = (totalAmount * platformFeePercentage) / 100;
-  const netAmount = totalAmount - platformFee;
+const onChargeFailed = async (payload: any) => {
+  const {
+    amount,
+    charge,
+    currency,
+    reference,
+    tx_ref,
+    payment_method,
+    status,
+    meta,
+  } = payload;
 
-  // 1. Extract custom metadata
-  const { userId, referenceType, referenceId } = session.metadata || {};
+  // 1. Extract custom metadata safely
+  let parsedMeta = meta;
+  if (typeof meta === 'string') {
+    try {
+      parsedMeta = JSON.parse(meta);
+    } catch {
+      parsedMeta = null;
+    }
+  }
+
+  const { userId, referenceType, referenceId } = parsedMeta || {};
+
   if (!userId || !referenceType || !referenceId) {
     console.error(
-      `[Stripe Webhook Error] Missing crucial metadata for session: ${session.id}`,
+      `[Chapa Webhook Error] Missing crucial metadata for failed transaction reference: ${tx_ref}`,
     );
     return;
   }
 
+  // 2. Fetch platform pricing parameters
+  const setting = await Setting.findOne().select('platformFeePercentage');
+
+  // 3. Format financial data
+  const totalAmount = parseFloat(amount) || 0;
+  const gatewayFee = parseFloat(charge) || 0;
+  const platformFeePercentage = setting?.platformFeePercentage || 0;
+  const platformFee = (totalAmount * platformFeePercentage) / 100;
+  const netAmount = totalAmount - platformFee;
+
+  // Determine clean transaction status mapping based on Chapa's response status string
+  const finalStatus =
+    status === 'cancelled'
+      ? TransactionStatus.Cancelled
+      : TransactionStatus.Failed;
+
   try {
-    // 2. Update or create the transaction document to mark it as Failed
+    // 4. Update or create the transaction document inside your MongoDB ledger to mark it as Failed/Cancelled
     const transaction = await Transaction.findOneAndUpdate(
       {
-        gateway: TransactionGateway.Stripe,
-        gatewayReferenceId: paymentIntentId,
+        gateway: TransactionGateway.Chapa,
+        gatewayReferenceId: tx_ref,
       },
       {
         $set: {
@@ -138,16 +174,14 @@ export const onAsyncPaymentFailed = async (event: Stripe.Event) => {
             id: referenceId,
           },
           type: TransactionType.Payment,
-          gateway: TransactionGateway.Stripe,
-          gatewayReferenceId: paymentIntentId,
-          paymentMethod: session.payment_method_types?.[0] || 'card',
+          paymentMethod: payment_method || 'chapa_digital',
           amount: totalAmount,
           gatewayFee: gatewayFee,
           platformFeePercentage: platformFeePercentage,
           platformFee: platformFee,
           netAmount: netAmount,
-          currency: session.currency?.toUpperCase() || 'USD',
-          status: TransactionStatus.Failed,
+          currency: currency?.toUpperCase() || 'USD',
+          status: finalStatus,
           isPaid: false,
         },
       },
@@ -155,108 +189,26 @@ export const onAsyncPaymentFailed = async (event: Stripe.Event) => {
     );
 
     console.log(
-      `[Stripe Webhook Failure][${event.type}] Transaction ${transaction._id} marked as FAILED.`,
+      `[Chapa Webhook Failure] Transaction ${transaction._id} logged into Ledger as ${finalStatus}.`,
     );
 
-    // 3. Reverse Fulfillment Logic (Release the held resource)
+    // 5. Reverse Fulfillment Logic (Release the held hotel room/resource)
     switch (referenceType) {
       case TransactionReferenceType.Reservation:
         await Reservation.findByIdAndUpdate(referenceId, {
           $set: {
             transaction: transaction._id,
-            'pricing.isPaid': false,
+            'pricing.isPaid': false, // Ensure reservation remains unfulfilled / unpaid
           },
         });
         break;
+
       default:
         break;
     }
   } catch (error: any) {
     console.error(
-      `[Database Error] Failed to process payment failure for intent ${paymentIntentId}:`,
-      error.message,
-    );
-    throw error;
-  }
-};
-
-// ----------------- on checkout session expired -----------------
-export const onCheckoutSessionExpired = async (event: Stripe.Event) => {
-  const session = event.data.object as Stripe.Checkout.Session;
-  const paymentIntentId = session.payment_intent as string;
-
-  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
-    expand: ['latest_charge.balance_transaction'],
-  });
-  const balanceTransaction = (paymentIntent.latest_charge as Stripe.Charge)
-    ?.balance_transaction as Stripe.BalanceTransaction;
-  const setting = await Setting.findOne().select('platformFeePercentage');
-  const totalAmount = balanceTransaction.amount / 100;
-  const gatewayFee = balanceTransaction?.fee / 100 || 0;
-  const platformFeePercentage = setting?.platformFeePercentage || 0;
-  const platformFee = (totalAmount * platformFeePercentage) / 100;
-  const netAmount = totalAmount - platformFee;
-
-  // 1. Extract custom metadata
-  const { userId, referenceType, referenceId } = session.metadata || {};
-  if (!userId || !referenceType || !referenceId) {
-    console.error(
-      `[Stripe Webhook Error] Missing crucial metadata for session: ${session.id}`,
-    );
-    return;
-  }
-
-  try {
-    // 2. Update or create the transaction document to mark it as Failed
-    const transaction = await Transaction.findOneAndUpdate(
-      {
-        gateway: TransactionGateway.Stripe,
-        gatewayReferenceId: paymentIntentId,
-      },
-      {
-        $set: {
-          user: userId,
-          reference: {
-            type: referenceType as TransactionReferenceType,
-            id: referenceId,
-          },
-          type: TransactionType.Payment,
-          gateway: TransactionGateway.Stripe,
-          gatewayReferenceId: paymentIntentId,
-          paymentMethod: session.payment_method_types?.[0] || 'card',
-          amount: totalAmount,
-          gatewayFee: gatewayFee,
-          platformFeePercentage: platformFeePercentage,
-          platformFee: platformFee,
-          netAmount: netAmount,
-          currency: session.currency?.toUpperCase() || 'USD',
-          status: TransactionStatus.Cancelled,
-          isPaid: false,
-        },
-      },
-      { upsert: true, new: true },
-    );
-
-    console.log(
-      `[Stripe Webhook Failure][${event.type}] Transaction ${transaction._id} marked as FAILED.`,
-    );
-
-    // 3. Reverse Fulfillment Logic (Release the held resource)
-    switch (referenceType) {
-      case TransactionReferenceType.Reservation:
-        await Reservation.findByIdAndUpdate(referenceId, {
-          $set: {
-            transaction: transaction._id,
-            'pricing.isPaid': false,
-          },
-        });
-        break;
-      default:
-        break;
-    }
-  } catch (error: any) {
-    console.error(
-      `[Database Error] Failed to process payment failure for intent ${paymentIntentId}:`,
+      `[Database Error] Failed to process Chapa payment failure/cancellation for reference ${tx_ref}:`,
       error.message,
     );
     throw error;
@@ -264,7 +216,6 @@ export const onCheckoutSessionExpired = async (event: Stripe.Event) => {
 };
 
 export const ChapaWebhookServices = {
-  onCheckoutSessionCompleted,
-  onAsyncPaymentFailed,
-  onCheckoutSessionExpired,
+  onChargeSuccess,
+  onChargeFailed,
 };
