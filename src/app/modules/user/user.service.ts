@@ -59,7 +59,7 @@ const getSingleUserFromDB = async (id: string): Promise<Partial<IUser>> => {
 };
 
 const getProfileFromDB = async (id: string): Promise<Partial<IUser>> => {
-  const user = await User.findById(id);
+  const user = await User.findById(id).populate('roleRef');
   if (!user) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
@@ -278,7 +278,7 @@ const getAllUsersFromDB = async (query: Record<string, unknown>) => {
     .fields();
 
   const [users, pagination] = await Promise.all([
-    userQuery.modelQuery.lean(),
+    userQuery.modelQuery.populate('roleRef').lean(),
     userQuery.getPaginationInfo(),
   ]);
 

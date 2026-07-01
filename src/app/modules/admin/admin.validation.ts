@@ -41,6 +41,8 @@ const updateAdminZodSchema = z.object({
         .email('Invalid email address'),
       phone: z.coerce
         .string({ required_error: 'Phone is required' })
+        .min(10, 'Phone must be at least 10 characters long')
+        .max(15, 'Phone must be at most 15 characters long')
         .optional(),
       permissions: z.array(z.string()).optional(),
       status: z.nativeEnum(UserStatus).optional(),

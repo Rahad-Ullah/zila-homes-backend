@@ -1,13 +1,13 @@
-import { Model, ObjectId } from 'mongoose';
+import { Model, Types, ObjectId } from 'mongoose';
 import { UserRole, UserStatus, VerificationStatus } from './user.constant';
 
 export interface IUser {
-  _id: ObjectId;
+  _id: Types.ObjectId;
   uid: string;
   firstName: string;
   lastName: string;
   role: UserRole;
-  roleRef: ObjectId;
+  roleRef: Types.ObjectId;
   email: string;
   password: string;
   phone: string;
@@ -33,7 +33,7 @@ export interface IUser {
     submittedAt?: Date;
     reviewNotes?: string;
     reviewedAt?: Date;
-    reviewedBy?: ObjectId;
+    reviewedBy?: Types.ObjectId;
   };
   authentication?: {
     isResetPassword: boolean;

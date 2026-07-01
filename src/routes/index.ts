@@ -16,12 +16,17 @@ import { settingRoutes } from '../app/modules/setting/setting.route';
 import { transactionRoutes } from '../app/modules/transaction/transaction.route';
 import { advertisementRoutes } from '../app/modules/advertisement/advertisement.route';
 import { analyticsRoutes } from '../app/modules/analytics/analytics.route';
+import { adminRoutes } from '../app/modules/admin/admin.route';
 const router = express.Router();
 
 const apiRoutes: { path: string; route: any }[] = [
   {
     path: '/users',
     route: UserRoutes,
+  },
+  {
+    path: '/admins',
+    route: adminRoutes,
   },
   {
     path: '/auth',
@@ -87,7 +92,7 @@ const apiRoutes: { path: string; route: any }[] = [
     path: '/analytics',
     route: analyticsRoutes,
   },
-]
+];
 
 apiRoutes.forEach(route => router.use(route.path, route.route));
 

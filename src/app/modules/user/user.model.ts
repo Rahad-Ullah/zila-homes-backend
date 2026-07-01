@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { model, Schema, Types } from 'mongoose';
+import { model, Schema } from 'mongoose';
 import config from '../../../config';
 import { IUser, UserModal } from './user.interface';
 import { UserRole, UserStatus, VerificationStatus } from './user.constant';
@@ -28,7 +28,7 @@ const userSchema = new Schema<IUser, UserModal>(
       required: true,
     },
     roleRef: {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       refPath: 'roleModel',
     },
     email: {
@@ -126,7 +126,7 @@ const userSchema = new Schema<IUser, UserModal>(
           default: null,
         },
         reviewedBy: {
-          type: Types.ObjectId,
+          type: Schema.Types.ObjectId,
           ref: 'User',
           default: null,
         },
