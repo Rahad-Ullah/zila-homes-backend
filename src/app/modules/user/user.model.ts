@@ -27,6 +27,10 @@ const userSchema = new Schema<IUser, UserModal>(
       enum: Object.values(UserRole),
       required: true,
     },
+    roleRef: {
+      type: Types.ObjectId,
+      refPath: 'roleModel',
+    },
     email: {
       type: String,
       required: true,
@@ -152,6 +156,17 @@ const userSchema = new Schema<IUser, UserModal>(
 
 // 2dsphere index for geospatial queries
 userSchema.index({ location: '2dsphere' });
+
+// virtual field
+userSchema.virtual('roleModel').get(function () {
+  if (!this.role) return null;
+
+  // Converts snake_case ('super_admin') to PascalCase ('SuperAdmin')
+  return this.role
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join('');
+});
 
 //exist user check
 userSchema.statics.isExistUserById = async (id: string) => {

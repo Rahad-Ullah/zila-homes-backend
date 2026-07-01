@@ -1,12 +1,13 @@
-import { Model, Types } from 'mongoose';
+import { Model, ObjectId } from 'mongoose';
 import { UserRole, UserStatus, VerificationStatus } from './user.constant';
 
 export interface IUser {
-  _id: Types.ObjectId;
+  _id: ObjectId;
   uid: string;
   firstName: string;
   lastName: string;
   role: UserRole;
+  roleRef: ObjectId;
   email: string;
   password: string;
   phone: string;
@@ -17,7 +18,7 @@ export interface IUser {
     state: string;
     postalCode: string;
     country: string;
-  }
+  };
   location: {
     type: string;
     coordinates: [number, number];
@@ -32,8 +33,8 @@ export interface IUser {
     submittedAt?: Date;
     reviewNotes?: string;
     reviewedAt?: Date;
-    reviewedBy?: Types.ObjectId;
-  }
+    reviewedBy?: ObjectId;
+  };
   authentication?: {
     isResetPassword: boolean;
     oneTimeCode: number;
@@ -41,7 +42,7 @@ export interface IUser {
   };
   createdAt: Date;
   updatedAt: Date;
-};
+}
 
 export type UserModal = {
   isExistUserById(id: string): any;
