@@ -83,7 +83,7 @@ const createChapaCheckoutSession = async (
       first_name: user.firstName || 'Zila',
       last_name: user.lastName || 'Customer',
       email: user.email,
-      phone_number: '0900112233',
+      // phone_number: '0900112233',
       amount: amount.toString(),
       currency: currency.toUpperCase(),
       tx_ref: txRef,

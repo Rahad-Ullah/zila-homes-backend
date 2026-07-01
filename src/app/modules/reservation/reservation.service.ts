@@ -15,11 +15,24 @@ import { sendNotifications } from '../../../helpers/notificationHelper';
 import { NotificationType } from '../notification/notification.constant';
 import { Types } from 'mongoose';
 import { Transaction } from '../transaction/transaction.model';
+import { VerificationStatus } from '../user/user.constant';
 
 // -------------- create reservation --------------
 const createReservation = async (
   payload: IReservation & { currency: string },
 ) => {
+  // check if the customer is exist
+  const customer = await User.findById(payload.customer).select(
+    'firstName lastName phone email verification',
+  );
+  if (!customer) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Customer not found');
+  }
+  // check if the customer is kyc verified
+  if (customer.verification?.status !== VerificationStatus.Verified) {
+    throw new ApiError(StatusCodes.FORBIDDEN, 'Please verify your KYC first');
+  }
+
   // check if accommodation is available
   const property = await Property.findOne({
     _id: payload.property,
@@ -33,14 +46,6 @@ const createReservation = async (
       StatusCodes.BAD_REQUEST,
       'Property is not an accommodation',
     );
-  }
-
-  // check if the customer is valid
-  const customer = await User.findById(payload.customer).select(
-    'firstName lastName phone email',
-  );
-  if (!customer) {
-    throw new ApiError(StatusCodes.NOT_FOUND, 'Customer not found');
   }
 
   // calculate units and price from dates
@@ -126,7 +131,7 @@ const createReservation = async (
   });
 
   return paymentSession;
-};;
+};
 
 // -------------- update reservation --------------
 const updateReservation = async (
